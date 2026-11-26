@@ -1,0 +1,745 @@
+{
+  "deployment": {
+    "handoff": "nixl",
+    "lmcache_topology": "shared_engine",
+    "cold_d": false,
+    "lmcache_l1_budget_gb": 8,
+    "lmcache_save_decode_cache": false
+  },
+  "layouts": {
+    "chat": {
+      "memory": {
+        "status": "passed",
+        "mode": "memory",
+        "layout": "chat",
+        "handoff": "nixl",
+        "lmcache_topology": "shared_engine",
+        "cold_d": false,
+        "lmcache_l1_budget_gb": 8,
+        "lmcache_by_server": {
+          "lmcache": {
+            "gpu_to_lmcache_bytes": 415236096,
+            "lmcache_to_gpu_bytes": 0,
+            "disk_read_bytes": 0,
+            "disk_write_bytes": 0
+          }
+        },
+        "lmcache_by_worker": {
+          "p0": {
+            "gpu_to_lmcache_bytes": 415236096,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d0": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d1": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d2": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          }
+        },
+        "lmcache_save_decode_cache": false,
+        "nixl_transferred_bytes": 544997376,
+        "nixl_transfers": 5,
+        "nixl_restored_blocks": 231,
+        "nixl_transfer_seconds": 0.935462,
+        "d_gpu_prefix_tokens": 48,
+        "d_tail_computed_tokens": 5,
+        "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+        "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+        "turns": 5,
+        "prompt_tokens": 3710,
+        "d_restored_objects": 0,
+        "d_restored_blocks": 0,
+        "d_restored_bytes": 0,
+        "p_gpu_prefix_tokens": 256,
+        "d_disk_read_bytes": 0,
+        "disk_write_bytes": 0,
+        "p_gpu_to_lmcache_bytes": 415236096,
+        "gpu_evictions_by_reason": {
+          "capacity": 193,
+          "reset": 249
+        },
+        "disk_directory": null,
+        "event_counts": {
+          "lmcache_disk_io_failed": 0,
+          "lmcache_disk_write_completed": 0,
+          "lmcache_disk_read_completed": 0,
+          "vllm_request_arrived": 10,
+          "vllm_prefix_lookup": 10,
+          "vllm_gpu_block_allocated": 452,
+          "vllm_kv_slots_allocated": 15,
+          "vllm_external_kv_ready": 5,
+          "vllm_gpu_block_cached": 442,
+          "vllm_gpu_work_planned": 45,
+          "vllm_gpu_kv_written": 258,
+          "vllm_request_blocks_release": 10,
+          "vllm_gpu_block_released": 471,
+          "lmcache_store_completed": 7,
+          "lmcache_l1_resident": 11,
+          "lmcache_retrieve_completed": 0,
+          "vllm_gpu_block_evicted": 442,
+          "vllm_prefix_cache_reset": 4
+        }
+      },
+      "disk": {
+        "status": "passed",
+        "mode": "disk",
+        "layout": "chat",
+        "handoff": "nixl",
+        "lmcache_topology": "shared_engine",
+        "cold_d": false,
+        "lmcache_l1_budget_gb": 8,
+        "lmcache_by_server": {
+          "lmcache": {
+            "gpu_to_lmcache_bytes": 490733568,
+            "lmcache_to_gpu_bytes": 0,
+            "disk_read_bytes": 0,
+            "disk_write_bytes": 415236096
+          }
+        },
+        "lmcache_by_worker": {
+          "p0": {
+            "gpu_to_lmcache_bytes": 415236096,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d0": {
+            "gpu_to_lmcache_bytes": 75497472,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d1": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d2": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          }
+        },
+        "lmcache_save_decode_cache": false,
+        "nixl_transferred_bytes": 544997376,
+        "nixl_transfers": 5,
+        "nixl_restored_blocks": 231,
+        "nixl_transfer_seconds": 0.965876,
+        "d_gpu_prefix_tokens": 48,
+        "d_tail_computed_tokens": 5,
+        "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+        "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+        "turns": 5,
+        "prompt_tokens": 3710,
+        "d_restored_objects": 0,
+        "d_restored_blocks": 0,
+        "d_restored_bytes": 0,
+        "p_gpu_prefix_tokens": 256,
+        "d_disk_read_bytes": 0,
+        "disk_write_bytes": 415236096,
+        "p_gpu_to_lmcache_bytes": 415236096,
+        "gpu_evictions_by_reason": {
+          "capacity": 193,
+          "reset": 249
+        },
+        "disk_directory": "/tmp/nbore/es2-lifecycle-30750/disk.Mb7zIP/disk-chat",
+        "event_counts": {
+          "lmcache_disk_io_failed": 0,
+          "vllm_request_arrived": 10,
+          "vllm_prefix_lookup": 10,
+          "vllm_gpu_block_allocated": 452,
+          "vllm_gpu_block_cached": 442,
+          "vllm_kv_slots_allocated": 15,
+          "vllm_gpu_work_planned": 45,
+          "vllm_gpu_kv_written": 258,
+          "vllm_request_blocks_release": 10,
+          "vllm_gpu_block_released": 471,
+          "vllm_external_kv_ready": 5,
+          "lmcache_l1_resident": 13,
+          "lmcache_store_completed": 6,
+          "lmcache_disk_write_completed": 11,
+          "lmcache_l1_evicted": 13,
+          "lmcache_retrieve_completed": 0,
+          "vllm_gpu_block_evicted": 442,
+          "vllm_prefix_cache_reset": 4
+        }
+      },
+      "output_mismatch_turns": []
+    },
+    "carry_forward": {
+      "memory": {
+        "status": "passed",
+        "mode": "memory",
+        "layout": "carry_forward",
+        "handoff": "nixl",
+        "lmcache_topology": "shared_engine",
+        "cold_d": false,
+        "lmcache_l1_budget_gb": 8,
+        "lmcache_by_server": {
+          "lmcache": {
+            "gpu_to_lmcache_bytes": 490733568,
+            "lmcache_to_gpu_bytes": 0,
+            "disk_read_bytes": 0,
+            "disk_write_bytes": 0
+          }
+        },
+        "lmcache_by_worker": {
+          "p0": {
+            "gpu_to_lmcache_bytes": 490733568,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d0": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d1": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d2": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          }
+        },
+        "lmcache_save_decode_cache": false,
+        "nixl_transferred_bytes": 1191444480,
+        "nixl_transfers": 5,
+        "nixl_restored_blocks": 505,
+        "nixl_transfer_seconds": 1.957824,
+        "d_gpu_prefix_tokens": 2032,
+        "d_tail_computed_tokens": 5,
+        "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+        "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+        "turns": 5,
+        "prompt_tokens": 10076,
+        "d_restored_objects": 0,
+        "d_restored_blocks": 0,
+        "d_restored_bytes": 0,
+        "p_gpu_prefix_tokens": 6688,
+        "d_disk_read_bytes": 0,
+        "disk_write_bytes": 0,
+        "p_gpu_to_lmcache_bytes": 490733568,
+        "gpu_evictions_by_reason": {
+          "reset": 711
+        },
+        "disk_directory": null,
+        "event_counts": {
+          "lmcache_disk_io_failed": 0,
+          "lmcache_disk_write_completed": 0,
+          "lmcache_disk_read_completed": 0,
+          "vllm_request_arrived": 10,
+          "vllm_prefix_lookup": 10,
+          "vllm_gpu_block_allocated": 721,
+          "vllm_gpu_block_cached": 711,
+          "vllm_kv_slots_allocated": 15,
+          "vllm_gpu_work_planned": 45,
+          "vllm_gpu_kv_written": 254,
+          "vllm_request_blocks_release": 10,
+          "vllm_gpu_block_released": 1266,
+          "vllm_external_kv_ready": 5,
+          "lmcache_store_completed": 7,
+          "lmcache_l1_resident": 13,
+          "lmcache_retrieve_completed": 0,
+          "vllm_gpu_block_evicted": 711,
+          "vllm_prefix_cache_reset": 4
+        }
+      },
+      "disk": {
+        "status": "passed",
+        "mode": "disk",
+        "layout": "carry_forward",
+        "handoff": "nixl",
+        "lmcache_topology": "shared_engine",
+        "cold_d": false,
+        "lmcache_l1_budget_gb": 8,
+        "lmcache_by_server": {
+          "lmcache": {
+            "gpu_to_lmcache_bytes": 490733568,
+            "lmcache_to_gpu_bytes": 0,
+            "disk_read_bytes": 641728512,
+            "disk_write_bytes": 490733568
+          }
+        },
+        "lmcache_by_worker": {
+          "p0": {
+            "gpu_to_lmcache_bytes": 490733568,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d0": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d1": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          },
+          "d2": {
+            "gpu_to_lmcache_bytes": 0,
+            "lmcache_to_gpu_bytes": 0
+          }
+        },
+        "lmcache_save_decode_cache": false,
+        "nixl_transferred_bytes": 1191444480,
+        "nixl_transfers": 5,
+        "nixl_restored_blocks": 505,
+        "nixl_transfer_seconds": 1.920133,
+        "d_gpu_prefix_tokens": 2032,
+        "d_tail_computed_tokens": 5,
+        "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+        "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+        "turns": 5,
+        "prompt_tokens": 10076,
+        "d_restored_objects": 0,
+        "d_restored_blocks": 0,
+        "d_restored_bytes": 0,
+        "p_gpu_prefix_tokens": 6688,
+        "d_disk_read_bytes": 0,
+        "disk_write_bytes": 490733568,
+        "p_gpu_to_lmcache_bytes": 490733568,
+        "gpu_evictions_by_reason": {
+          "reset": 711
+        },
+        "disk_directory": "/tmp/nbore/es2-lifecycle-30750/disk.Mb7zIP/disk-carry_forward",
+        "event_counts": {
+          "lmcache_disk_io_failed": 0,
+          "vllm_request_arrived": 10,
+          "vllm_prefix_lookup": 10,
+          "vllm_gpu_block_allocated": 721,
+          "vllm_kv_slots_allocated": 15,
+          "vllm_external_kv_ready": 5,
+          "vllm_gpu_block_cached": 711,
+          "vllm_gpu_work_planned": 45,
+          "vllm_gpu_kv_written": 254,
+          "vllm_request_blocks_release": 10,
+          "vllm_gpu_block_released": 1266,
+          "lmcache_l1_resident": 30,
+          "lmcache_store_completed": 5,
+          "lmcache_disk_write_completed": 13,
+          "lmcache_l1_evicted": 30,
+          "lmcache_retrieve_completed": 0,
+          "lmcache_disk_read_completed": 17,
+          "vllm_gpu_block_evicted": 711,
+          "vllm_prefix_cache_reset": 4
+        }
+      },
+      "output_mismatch_turns": []
+    }
+  },
+  "token_outputs_match": true,
+  "against": {
+    "reference": {
+      "deployment": {
+        "handoff": "nixl",
+        "lmcache_topology": "per_engine",
+        "cold_d": false,
+        "lmcache_l1_budget_gb": 8,
+        "lmcache_save_decode_cache": false
+      },
+      "layouts": {
+        "chat": {
+          "memory": {
+            "status": "passed",
+            "mode": "memory",
+            "layout": "chat",
+            "handoff": "nixl",
+            "lmcache_topology": "per_engine",
+            "cold_d": false,
+            "lmcache_l1_budget_gb": 8,
+            "lmcache_by_server": {
+              "lmcache-p0": {
+                "gpu_to_lmcache_bytes": 415236096,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d0": {
+                "gpu_to_lmcache_bytes": 150994944,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d1": {
+                "gpu_to_lmcache_bytes": 188743680,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d2": {
+                "gpu_to_lmcache_bytes": 75497472,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              }
+            },
+            "lmcache_by_worker": {
+              "p0": {
+                "gpu_to_lmcache_bytes": 415236096,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d0": {
+                "gpu_to_lmcache_bytes": 150994944,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d1": {
+                "gpu_to_lmcache_bytes": 188743680,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d2": {
+                "gpu_to_lmcache_bytes": 75497472,
+                "lmcache_to_gpu_bytes": 0
+              }
+            },
+            "lmcache_save_decode_cache": false,
+            "nixl_transferred_bytes": 544997376,
+            "nixl_transfers": 5,
+            "nixl_restored_blocks": 231,
+            "nixl_transfer_seconds": 0.977309,
+            "d_gpu_prefix_tokens": 48,
+            "d_tail_computed_tokens": 5,
+            "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+            "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+            "turns": 5,
+            "prompt_tokens": 3710,
+            "d_restored_objects": 0,
+            "d_restored_blocks": 0,
+            "d_restored_bytes": 0,
+            "p_gpu_prefix_tokens": 256,
+            "d_disk_read_bytes": 0,
+            "disk_write_bytes": 0,
+            "p_gpu_to_lmcache_bytes": 415236096,
+            "gpu_evictions_by_reason": {
+              "capacity": 193,
+              "reset": 249
+            },
+            "disk_directory": null,
+            "event_counts": {
+              "lmcache_disk_io_failed": 0,
+              "lmcache_disk_write_completed": 0,
+              "lmcache_disk_read_completed": 0,
+              "vllm_request_arrived": 10,
+              "vllm_prefix_lookup": 10,
+              "vllm_gpu_block_allocated": 452,
+              "vllm_kv_slots_allocated": 15,
+              "vllm_external_kv_ready": 5,
+              "vllm_gpu_block_cached": 442,
+              "vllm_gpu_work_planned": 45,
+              "vllm_gpu_kv_written": 258,
+              "vllm_request_blocks_release": 10,
+              "vllm_gpu_block_released": 471,
+              "lmcache_l1_resident": 22,
+              "lmcache_store_completed": 10,
+              "lmcache_retrieve_completed": 0,
+              "vllm_gpu_block_evicted": 442,
+              "vllm_prefix_cache_reset": 4
+            }
+          },
+          "disk": {
+            "status": "passed",
+            "mode": "disk",
+            "layout": "chat",
+            "handoff": "nixl",
+            "lmcache_topology": "per_engine",
+            "cold_d": false,
+            "lmcache_l1_budget_gb": 8,
+            "lmcache_by_server": {
+              "lmcache-p0": {
+                "gpu_to_lmcache_bytes": 415236096,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 415236096
+              },
+              "lmcache-d0": {
+                "gpu_to_lmcache_bytes": 150994944,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 150994944
+              },
+              "lmcache-d1": {
+                "gpu_to_lmcache_bytes": 188743680,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 188743680
+              },
+              "lmcache-d2": {
+                "gpu_to_lmcache_bytes": 75497472,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 75497472
+              }
+            },
+            "lmcache_by_worker": {
+              "p0": {
+                "gpu_to_lmcache_bytes": 415236096,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d0": {
+                "gpu_to_lmcache_bytes": 150994944,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d1": {
+                "gpu_to_lmcache_bytes": 188743680,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d2": {
+                "gpu_to_lmcache_bytes": 75497472,
+                "lmcache_to_gpu_bytes": 0
+              }
+            },
+            "lmcache_save_decode_cache": false,
+            "nixl_transferred_bytes": 544997376,
+            "nixl_transfers": 5,
+            "nixl_restored_blocks": 231,
+            "nixl_transfer_seconds": 0.9691130000000001,
+            "d_gpu_prefix_tokens": 48,
+            "d_tail_computed_tokens": 5,
+            "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+            "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+            "turns": 5,
+            "prompt_tokens": 3710,
+            "d_restored_objects": 0,
+            "d_restored_blocks": 0,
+            "d_restored_bytes": 0,
+            "p_gpu_prefix_tokens": 256,
+            "d_disk_read_bytes": 0,
+            "disk_write_bytes": 830472192,
+            "p_gpu_to_lmcache_bytes": 415236096,
+            "gpu_evictions_by_reason": {
+              "capacity": 193,
+              "reset": 249
+            },
+            "disk_directory": "/tmp/nbore/es2-lifecycle-30750/disk.QJdwqZ/disk-chat",
+            "event_counts": {
+              "lmcache_disk_io_failed": 0,
+              "vllm_request_arrived": 10,
+              "vllm_prefix_lookup": 10,
+              "vllm_gpu_block_allocated": 452,
+              "vllm_kv_slots_allocated": 15,
+              "vllm_external_kv_ready": 5,
+              "vllm_gpu_block_cached": 442,
+              "vllm_gpu_work_planned": 45,
+              "vllm_gpu_kv_written": 258,
+              "vllm_request_blocks_release": 10,
+              "vllm_gpu_block_released": 471,
+              "lmcache_l1_resident": 22,
+              "lmcache_store_completed": 10,
+              "lmcache_disk_write_completed": 22,
+              "lmcache_l1_evicted": 22,
+              "lmcache_retrieve_completed": 0,
+              "vllm_gpu_block_evicted": 442,
+              "vllm_prefix_cache_reset": 4
+            }
+          },
+          "output_mismatch_turns": []
+        },
+        "carry_forward": {
+          "memory": {
+            "status": "passed",
+            "mode": "memory",
+            "layout": "carry_forward",
+            "handoff": "nixl",
+            "lmcache_topology": "per_engine",
+            "cold_d": false,
+            "lmcache_l1_budget_gb": 8,
+            "lmcache_by_server": {
+              "lmcache-p0": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d0": {
+                "gpu_to_lmcache_bytes": 377487360,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d1": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              },
+              "lmcache-d2": {
+                "gpu_to_lmcache_bytes": 264241152,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 0
+              }
+            },
+            "lmcache_by_worker": {
+              "p0": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d0": {
+                "gpu_to_lmcache_bytes": 377487360,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d1": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d2": {
+                "gpu_to_lmcache_bytes": 264241152,
+                "lmcache_to_gpu_bytes": 0
+              }
+            },
+            "lmcache_save_decode_cache": false,
+            "nixl_transferred_bytes": 1191444480,
+            "nixl_transfers": 5,
+            "nixl_restored_blocks": 505,
+            "nixl_transfer_seconds": 1.966979,
+            "d_gpu_prefix_tokens": 2032,
+            "d_tail_computed_tokens": 5,
+            "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+            "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+            "turns": 5,
+            "prompt_tokens": 10076,
+            "d_restored_objects": 0,
+            "d_restored_blocks": 0,
+            "d_restored_bytes": 0,
+            "p_gpu_prefix_tokens": 6688,
+            "d_disk_read_bytes": 0,
+            "disk_write_bytes": 0,
+            "p_gpu_to_lmcache_bytes": 490733568,
+            "gpu_evictions_by_reason": {
+              "reset": 711
+            },
+            "disk_directory": null,
+            "event_counts": {
+              "lmcache_disk_io_failed": 0,
+              "lmcache_disk_write_completed": 0,
+              "lmcache_disk_read_completed": 0,
+              "lmcache_l1_resident": 43,
+              "lmcache_store_completed": 10,
+              "vllm_request_arrived": 10,
+              "vllm_prefix_lookup": 10,
+              "vllm_gpu_block_allocated": 721,
+              "vllm_kv_slots_allocated": 15,
+              "vllm_external_kv_ready": 5,
+              "vllm_gpu_block_cached": 711,
+              "vllm_gpu_work_planned": 45,
+              "vllm_gpu_kv_written": 254,
+              "vllm_request_blocks_release": 10,
+              "vllm_gpu_block_released": 1266,
+              "lmcache_retrieve_completed": 0,
+              "vllm_gpu_block_evicted": 711,
+              "vllm_prefix_cache_reset": 4
+            }
+          },
+          "disk": {
+            "status": "passed",
+            "mode": "disk",
+            "layout": "carry_forward",
+            "handoff": "nixl",
+            "lmcache_topology": "per_engine",
+            "cold_d": false,
+            "lmcache_l1_budget_gb": 8,
+            "lmcache_by_server": {
+              "lmcache-p0": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 490733568
+              },
+              "lmcache-d0": {
+                "gpu_to_lmcache_bytes": 377487360,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 377487360
+              },
+              "lmcache-d1": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 339738624
+              },
+              "lmcache-d2": {
+                "gpu_to_lmcache_bytes": 264241152,
+                "lmcache_to_gpu_bytes": 0,
+                "disk_read_bytes": 0,
+                "disk_write_bytes": 264241152
+              }
+            },
+            "lmcache_by_worker": {
+              "p0": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d0": {
+                "gpu_to_lmcache_bytes": 377487360,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d1": {
+                "gpu_to_lmcache_bytes": 490733568,
+                "lmcache_to_gpu_bytes": 0
+              },
+              "d2": {
+                "gpu_to_lmcache_bytes": 264241152,
+                "lmcache_to_gpu_bytes": 0
+              }
+            },
+            "lmcache_save_decode_cache": false,
+            "nixl_transferred_bytes": 1191444480,
+            "nixl_transfers": 5,
+            "nixl_restored_blocks": 505,
+            "nixl_transfer_seconds": 1.947265,
+            "d_gpu_prefix_tokens": 2032,
+            "d_tail_computed_tokens": 5,
+            "manifest_sha256": "7b1b9360bc5be717b50387e197c10db8d1255574aabea76380994dee7d24136f",
+            "conversation_id": "1534a095279f2cb888fb0bea17bd70da",
+            "turns": 5,
+            "prompt_tokens": 10076,
+            "d_restored_objects": 0,
+            "d_restored_blocks": 0,
+            "d_restored_bytes": 0,
+            "p_gpu_prefix_tokens": 6688,
+            "d_disk_read_bytes": 0,
+            "disk_write_bytes": 1472200704,
+            "p_gpu_to_lmcache_bytes": 490733568,
+            "gpu_evictions_by_reason": {
+              "reset": 711
+            },
+            "disk_directory": "/tmp/nbore/es2-lifecycle-30750/disk.QJdwqZ/disk-carry_forward",
+            "event_counts": {
+              "lmcache_disk_io_failed": 0,
+              "vllm_request_arrived": 10,
+              "vllm_prefix_lookup": 10,
+              "vllm_gpu_block_allocated": 721,
+              "vllm_gpu_block_cached": 711,
+              "vllm_kv_slots_allocated": 15,
+              "vllm_gpu_work_planned": 45,
+              "vllm_gpu_kv_written": 254,
+              "vllm_request_blocks_release": 10,
+              "vllm_gpu_block_released": 1266,
+              "lmcache_l1_resident": 43,
+              "lmcache_store_completed": 10,
+              "lmcache_disk_write_completed": 39,
+              "lmcache_l1_evicted": 35,
+              "vllm_external_kv_ready": 5,
+              "lmcache_retrieve_completed": 0,
+              "vllm_gpu_block_evicted": 711,
+              "vllm_prefix_cache_reset": 4
+            }
+          },
+          "output_mismatch_turns": []
+        }
+      },
+      "token_outputs_match": true
+    },
+    "output_mismatch_turns": {
+      "chat": {
+        "memory": [],
+        "disk": []
+      },
+      "carry_forward": {
+        "memory": [],
+        "disk": []
+      }
+    },
+    "same_cold_d_control": true,
+    "same_lmcache_l1_budget": true,
+    "same_decode_offload_policy": true,
+    "token_outputs_match": true
+  }
+}
