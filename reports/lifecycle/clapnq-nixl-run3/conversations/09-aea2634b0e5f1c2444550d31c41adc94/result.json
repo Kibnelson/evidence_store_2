@@ -1,0 +1,155 @@
+{
+  "conversation_id": "aea2634b0e5f1c2444550d31c41adc94",
+  "turns": 8,
+  "manifest_sha256": "0654d9d5c641d4fb5d06595a569658d1d28e0d54da38e4ffe7a7b55f8ac4e601",
+  "archive": "conversations/09-aea2634b0e5f1c2444550d31c41adc94/traces.tar.gz",
+  "archive_sha256": "ca3cd4687a5ea8f6a10583df73f70b106b36c5be2490c43b43b50fbde169cb8e",
+  "comparisons": {
+    "memory-chat": {
+      "arms": {
+        "per_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 623,
+          "nixl_bytes": 1469841408,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 0,
+          "disk_write_bytes": 0,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 2566914048,
+          "nixl_transfer_seconds": 2.538335
+        },
+        "shared_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 623,
+          "nixl_bytes": 1469841408,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 0,
+          "disk_write_bytes": 0,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 1170210816,
+          "nixl_transfer_seconds": 2.5190580000000002
+        }
+      },
+      "output_mismatch_turns": [],
+      "kv_mismatch_turns": []
+    },
+    "memory-carry_forward": {
+      "arms": {
+        "per_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 1369,
+          "nixl_bytes": 3229876224,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 0,
+          "disk_write_bytes": 0,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 4341104640,
+          "nixl_transfer_seconds": 5.201320999999999
+        },
+        "shared_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 1369,
+          "nixl_bytes": 3229876224,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 0,
+          "disk_write_bytes": 0,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 1170210816,
+          "nixl_transfer_seconds": 5.151334
+        }
+      },
+      "output_mismatch_turns": [],
+      "kv_mismatch_turns": []
+    },
+    "disk-chat": {
+      "arms": {
+        "per_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 623,
+          "nixl_bytes": 1469841408,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 68,
+          "disk_write_bytes": 2566914048,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 2566914048,
+          "nixl_transfer_seconds": 2.589945
+        },
+        "shared_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 623,
+          "nixl_bytes": 1469841408,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 6,
+          "disk_read_bytes": 226492416,
+          "disk_writes": 31,
+          "disk_write_bytes": 1170210816,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 1660944384,
+          "nixl_transfer_seconds": 2.5113209999999997
+        }
+      },
+      "output_mismatch_turns": [],
+      "kv_mismatch_turns": []
+    },
+    "disk-carry_forward": {
+      "arms": {
+        "per_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 1369,
+          "nixl_bytes": 3229876224,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 0,
+          "disk_read_bytes": 0,
+          "disk_writes": 115,
+          "disk_write_bytes": 4341104640,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 4341104640,
+          "nixl_transfer_seconds": 5.204465
+        },
+        "shared_engine": {
+          "first_turn_p_gpu_prefix_tokens": 0,
+          "first_turn_d_gpu_prefix_tokens": 0,
+          "nixl_blocks": 1369,
+          "nixl_bytes": 3229876224,
+          "lmcache_gpu_restores": 0,
+          "disk_reads": 53,
+          "disk_read_bytes": 2000683008,
+          "disk_writes": 31,
+          "disk_write_bytes": 1170210816,
+          "p_lmcache_prefix_tokens": 0,
+          "gpu_to_lmcache_bytes": 1585446912,
+          "nixl_transfer_seconds": 5.247188
+        }
+      },
+      "output_mismatch_turns": [],
+      "kv_mismatch_turns": []
+    }
+  },
+  "memory_disk_output_mismatch_turns": {
+    "chat": {
+      "per_engine": [],
+      "shared_engine": []
+    },
+    "carry_forward": {
+      "per_engine": [],
+      "shared_engine": []
+    }
+  }
+}
