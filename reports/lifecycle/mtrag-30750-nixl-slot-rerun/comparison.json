@@ -1,0 +1,28 @@
+{
+  "arms": {
+    "per_engine": {
+      "first_turn_p_gpu_prefix_tokens": 0,
+      "first_turn_d_gpu_prefix_tokens": 0,
+      "nixl_blocks": 505,
+      "nixl_bytes": 1191444480,
+      "lmcache_gpu_restores": 0,
+      "disk_writes": 43,
+      "disk_write_bytes": 1623195648,
+      "disk_reads": 0,
+      "disk_read_bytes": 0
+    },
+    "shared_engine": {
+      "first_turn_p_gpu_prefix_tokens": 0,
+      "first_turn_d_gpu_prefix_tokens": 0,
+      "nixl_blocks": 505,
+      "nixl_bytes": 1191444480,
+      "lmcache_gpu_restores": 0,
+      "disk_writes": 13,
+      "disk_write_bytes": 490733568,
+      "disk_reads": 17,
+      "disk_read_bytes": 641728512
+    }
+  },
+  "output_mismatch_turns": [],
+  "kv_mismatch_turns": []
+}
