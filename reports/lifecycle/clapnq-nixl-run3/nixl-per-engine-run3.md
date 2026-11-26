@@ -191,6 +191,8 @@ For example, carry-forward turn 4 in conversation 01 had 2,660 tokens, which use
 
 ## Follow one block in disk carry-forward
 
+[Open the prompt-first view](prompt-timeline-turn4-per-engine.md) to see the exact prompt, token IDs, all 167 numbered blocks, and their GPU and LMCache events.
+
 Conversation 01, turn 4. Logical block 43 falls immediately after D0's local prefix. The events below follow the P GPU slot, the NIXL handoff into D0's GPU slot, and related LMCache object events.
 
 Prompt tokens `[688, 704)` in a 2,660-token request.
