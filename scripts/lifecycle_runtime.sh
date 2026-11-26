@@ -3,16 +3,23 @@ set -euo pipefail
 umask 077
 
 usage() {
-  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only | {--resume|--verify-only} RUNTIME ACTIVATION_RECEIPT\n' "${0##*/}"
+  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only | {--resume|--verify-only|--enable-nixl} RUNTIME ACTIVATION_RECEIPT\n' "${0##*/}"
 }
 
 resume=false
 verify_only=false
-if [[ "$#" == 3 && ( "$1" == --resume || "$1" == --verify-only ) ]]; then
+enable_nixl=false
+handoff="${EVIDENCESTORE_PD_HANDOFF:-lmcache}"
+if [[ "$#" == 3 && ( "$1" == --resume || "$1" == --verify-only || "$1" == --enable-nixl ) ]]; then
   resume=true
-  if [[ "$1" == --verify-only ]]; then
-    verify_only=true
-  fi
+  case "$1" in
+    --verify-only) verify_only=true ;;
+    --enable-nixl)
+      verify_only=true
+      enable_nixl=true
+      handoff=nixl
+      ;;
+  esac
   saved_runtime="$2"
   shift 2
 fi
@@ -23,6 +30,10 @@ fi
 if [[ "$1" == --help ]]; then
   usage
   exit 0
+fi
+if [[ "$handoff" != lmcache && "$handoff" != nixl ]]; then
+  printf 'EVIDENCESTORE_PD_HANDOFF must be lmcache or nixl.\n' >&2
+  exit 2
 fi
 
 stage_only=false
@@ -213,10 +224,17 @@ CUDA
       uv --no-config pip install --python "$python" --no-build-isolation "${reinstall[@]}" \
         --constraint "$repo/third_party/lifecycle/telemetry-constraints.txt" --editable "$LMCACHE_LIFECYCLE_SOURCE"
   fi
+  # These versions match the pinned vLLM CUDA KV connector test dependencies.
+  nixl_version=1.5.2
+  if [[ "$handoff" == nixl ]] && { ! "$verify_only" || "$enable_nixl"; }; then
+    uv --no-config pip install --python "$python" "nixl==$nixl_version" "nixl-cu13==$nixl_version"
+  fi
   uv --no-config pip check --python "$python"
 
-  "$python" - "$check/sources.json" <<'PY' | tee "$check/runtime.json"
-from importlib.metadata import version
+  runtime_receipt="$(mktemp "$check/.runtime.XXXXXX")"
+  trap 'rm -f -- "$runtime_receipt"' EXIT
+  "$python" - "$check/sources.json" "$handoff" "$nixl_version" <<'PY' | tee "$runtime_receipt"
+from importlib.metadata import PackageNotFoundError, version
 import json
 import os
 from pathlib import Path
@@ -237,7 +255,7 @@ if not hasattr(torch.ops._C_cache_ops, "reshape_and_cache_flash"):
 for module, name in ((vllm, "VLLM"), (lmcache, "LMCACHE")):
     if not Path(module.__file__).resolve().is_relative_to(os.environ[f"{name}_LIFECYCLE_SOURCE"]):
         raise SystemExit(f"Expected scratch editable module for {name}: {module.__file__}")
-print(json.dumps({
+receipt = {
     "sources": json.loads(Path(sys.argv[1]).read_text()),
     "versions": {name: version(name) for name in ("vllm", "lmcache", "torch")},
     "torch_cuda": torch.version.cuda,
@@ -246,8 +264,29 @@ print(json.dumps({
     "lmcache_native": lmcache.cuda_ops.__file__,
     "model_write_hook": emit_kv_writes.__module__,
     "connector": LMCacheMPConnector.__module__,
-}, indent=2))
+}
+if sys.argv[2] == "nixl":
+    try:
+        observed = {name: version(name) for name in ("nixl", "nixl-cu13")}
+    except PackageNotFoundError as exc:
+        raise SystemExit("Use --enable-nixl to install NIXL into an existing runtime") from exc
+    if any(actual != sys.argv[3] for actual in observed.values()):
+        raise SystemExit(f"Use --enable-nixl to install the pinned NIXL version, found {observed}")
+
+    from nixl._api import nixl_agent, nixl_agent_config
+
+    agent = nixl_agent(f"lifecycle-preflight-{os.getpid()}", nixl_agent_config(backends=[]))
+    if "UCX" not in {str(plugin) for plugin in agent.get_plugin_list()}:
+        raise SystemExit("NIXL cannot load the UCX backend")
+    agent.create_backend("UCX", {})
+    memory_types = sorted(str(item) for item in agent.get_backend_mem_types("UCX"))
+    if not any("VRAM" in item.upper() for item in memory_types):
+        raise SystemExit(f"NIXL UCX does not advertise GPU memory: {memory_types}")
+    receipt["nixl"] = {"versions": observed, "backend": "UCX", "memory_types": memory_types}
+print(json.dumps(receipt, indent=2))
 PY
+  mv -f -- "$runtime_receipt" "$check/runtime.json"
+  trap - EXIT
 
   activation="$runtime/activate.sh"
   export EVIDENCESTORE_LIFECYCLE_RUNTIME="$runtime"

@@ -12,7 +12,7 @@ from lifecycle_compare import compare
 from lifecycle_prepare import sha256_file
 
 
-WORKERS = ("lmcache", "p0", "d0", "d1", "d2")
+WORKERS = ("p0", "d0", "d1", "d2")
 
 
 def require_file(path):
@@ -24,7 +24,7 @@ def require_file(path):
 def compress(source, destination):
     destination.parent.mkdir(parents=True, exist_ok=True)
     with source.open("rb") as original, destination.open("wb") as compressed:
-        with gzip.GzipFile(filename="", fileobj=compressed, mtime=0, compresslevel=6) as stream:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=compressed, mtime=0, compresslevel=6) as stream:
             shutil.copyfileobj(original, stream)
 
 
@@ -51,7 +51,11 @@ def collect(results, destination, manifest, include_worker_logs):
             traces = sorted(require_file(path) for path in trace_dir.glob("*.jsonl"))
             if not traces:
                 raise ValueError(f"No lifecycle traces found in {trace_dir}")
-            logs = [require_file(arm / f"{worker}.log") for worker in WORKERS] if include_worker_logs else []
+            logs = []
+            if include_worker_logs:
+                topology = json.loads(summary.read_bytes()).get("lmcache_topology", "shared")
+                servers = tuple(f"lmcache-{worker}" for worker in WORKERS) if topology == "per_engine" else ("lmcache",)
+                logs = [require_file(arm / f"{worker}.log") for worker in (*servers, *WORKERS)]
             arms[phase] = summary, requests, traces, logs
 
     comparison = compare(results)

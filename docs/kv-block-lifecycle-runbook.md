@@ -1,17 +1,17 @@
 # Trace the KV block lifecycle in V2
 
-The pilot runs one complete five-turn MT-RAG CLAPNQ conversation through one prefill engine (P) and three decode engines (D). It uses normal vLLM prefix prefill and the LMCache multiprocess connector. All four runs use the same pinned revision of `Qwen/Qwen3-4B-Instruct-2507`, reference Q&A, and six ranked current passages per turn. [Frozen workload](../workloads/mtrag-multi-turn-repeat.json) · [Prompt preparation](../scripts/lifecycle_prepare.py)
+The pilot runs one complete five-turn MT-RAG CLAPNQ conversation through one prefill engine (P) and three decode engines (D). It uses normal vLLM prefix prefill. Step 5 selects either a shared-LMCache handoff or a native NIXL handoff with one LMCache server per engine. The four arms for each deployment use the same pinned revision of `Qwen/Qwen3-4B-Instruct-2507`, reference Q&A, and six ranked current passages per turn. [Frozen workload](../workloads/mtrag-multi-turn-repeat.json) · [Prompt preparation](../scripts/lifecycle_prepare.py)
 
 | LMCache mode | Chat RAG | Carry-forward RAG |
 | --- | --- | --- |
 | CPU memory | Current passages and prior Q&A | Current passages, prior passages, and prior Q&A |
 | Disk | Same chat token IDs | Same carry-forward token IDs |
 
-Each vLLM GPU block holds 16 tokens. LMCache stores complete 256-token objects, each covering 16 of those blocks. The natural tail remains in the prompt and is tracked separately. P keeps its GPU prefix cache warm across the five turns and skips LMCache lookups. The launcher rotates through the three decode engines and clears the selected engine's GPU prefix cache before each measured request. The handoff is P GPU → shared LMCache → D GPU. P samples one token to finish prefill. D generates eight tokens with greedy decoding, and the driver checks that D's model writes cover the prompt tail and the first seven generated tokens. D needs a further generation step to write KV for its eighth sampled token.
+Each vLLM GPU block holds 16 tokens. LMCache stores complete 256-token objects, each covering 16 GPU blocks. In the shared-LMCache arm, D pulls those complete objects and computes the prompt tail. In the NIXL arm, D receives native vLLM block coverage and the trace records the prompt tokens D actually computes. Both use a one-token P completion and an eight-token D completion. D's later forwards record seven generated tokens when they become inputs.
 
-The pilot uses small GPU block pools to expose slot reuse. All four workers use the LMCache connector's CUDA IPC path, which supports fixed block counts on this vLLM pin. The LMCache storage tier is selected independently.
+The pilot uses small GPU block pools. The LMCache connector uses same-node CUDA IPC to support fixed block counts on this pin. Step 5 selects the handoff and storage tier.
 
-In memory mode, LMCache keeps the objects in CPU memory. Both modes use the four GPUs for the model. In disk mode, LMCache writes to a local disk with `O_DIRECT`, releases the CPU-resident copy after the write, then reads it from disk for D. CPU buffers still stage the GPU transfers. The disk phase records the completed direct write and read for the matched objects. [vLLM hooks](../third_party/lifecycle/vllm.patch) · [LMCache hooks](../third_party/lifecycle/lmcache.patch)
+In memory mode, LMCache holds objects in CPU memory. In disk mode, LMCache writes them with `O_DIRECT` and releases the resident CPU copy. A disk restore reads into a temporary CPU buffer before copying to GPU. The shared deployment uses that tier for the handoff. The NIXL deployment uses the tier for worker-local LMCache reuse and records its GPU handoff separately. [vLLM hooks](../third_party/lifecycle/vllm.patch) · [LMCache hooks](../third_party/lifecycle/lmcache.patch)
 
 ## 1. Start tmux and allocate four GPUs
 
@@ -134,9 +134,54 @@ The conversation ID is `1534a095279f2cb888fb0bea17bd70da`. For example, if turn 
 
 The five chat prompts have 702, 669, 723, 765, and 851 tokens. Carry-forward has 702, 1,350, 2,007, 2,660, and 3,357. The inputs include their natural tails and the earlier reference answers. Turn 1 has identical token IDs in both layouts. In carry-forward, the next prompt preserves 2, 5, 7, and 10 complete chunks from the preceding prompt. The pilot uses the saved reference answers so changes in model output do not alter later prompts.
 
-## 5. Run the four comparisons
+### Enable NIXL in the verified runtime
 
-Still in the GPU shell, run the modes and layouts sequentially with a fresh output directory per attempt. The same frozen manifest is read by all four phases. For the disk phases, use a fresh directory on the node-local filesystem backed by disk. The default here is `/tmp` on `gpu-grad-01`. Check `findmnt` before running if the allocation is on a different node. [Pilot runner](../scripts/lifecycle_run.py)
+Steps 1–4 also prepare the prompt manifest for the NIXL configuration. The following optional step adds the pinned CUDA 13 NIXL packages to that runtime and checks the UCX backend. It writes a separate activation receipt that Step 5 selects automatically.
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  root="/tmp/$(id -un)/es2-lifecycle-${SLURM_JOB_ID:?Run in the GPU allocation}"
+  cd "$root/source"
+  source "$(cat "$root/activation.path")"
+  if [[ ! -s "$root/activation-nixl.path" ]]; then
+    bash scripts/lifecycle_runtime.sh --enable-nixl \
+      "$EVIDENCESTORE_LIFECYCLE_RUNTIME" "$root/activation-nixl.path"
+  fi
+)
+```
+
+## 5. Choose the handoff and run the four comparisons
+
+Select the two environment variables in the GPU shell. Each deployment uses the same one-conversation fixture and 1P/3D worker order.
+
+| `EVIDENCESTORE_PD_HANDOFF` | `EVIDENCESTORE_LMCACHE_TOPOLOGY` | KV path and cache capacity |
+| --- | --- | --- |
+| `lmcache` | `shared` | One 8 GB LMCache server holds the prefix between P and D. This is the job 30734 setup. |
+| `nixl` | `per_engine` | Native NIXL pulls the KV from P into D. Four 2 GB LMCache servers provide the same total CPU cache budget for cross-request reuse. |
+
+The launcher validates these pairs. The pinned upstream NIXL recipe uses one LMCache server per engine. The shared-LMCache handoff requires a cache accessible to both sides. Switching between these deployments changes both the handoff path and the cache topology. [Pinned NIXL and LMCache recipe](https://github.com/LMCache/LMCache/blob/042d47abdef0d460cf2cb0d5720e8a59280cda8a/docs/source/mp/disaggregated_prefill.rst)
+
+For the original shared-LMCache run, set:
+
+```bash
+export EVIDENCESTORE_PD_HANDOFF=lmcache
+export EVIDENCESTORE_LMCACHE_TOPOLOGY=shared
+export EVIDENCESTORE_PD_COLD_D=1
+```
+
+For the native NIXL run with one LMCache server per engine, set:
+
+```bash
+export EVIDENCESTORE_PD_HANDOFF=nixl
+export EVIDENCESTORE_LMCACHE_TOPOLOGY=per_engine
+export EVIDENCESTORE_PD_COLD_D=0
+```
+
+NIXL's default retains D's local GPU prefix state and uses the native P response handshake to dispatch the original prompt to D. P and D also retain their native LMCache lookup and offload behavior. Set `EVIDENCESTORE_PD_COLD_D=1` in the NIXL run when you want the same reset-before-request control as the shared run. The shared arm also skips external LMCache loads on P. The comparison prints the D cache control and memory budget for each deployment.
+
+After selecting a deployment, run this block from the GPU shell. The first arm is CPU memory with the chat layout. The loop stops on the first failed arm. The disk arms use fresh directories on the node-local filesystem.
 
 ```bash
 (
@@ -145,7 +190,17 @@ Still in the GPU shell, run the modes and layouts sequentially with a fresh outp
   : "${SLURM_JOB_ID:?Run in the four-GPU allocation}"
   root="/tmp/$(id -un)/es2-lifecycle-$SLURM_JOB_ID"
   cd "$root/source"
-  source "$(cat "$root/activation.path")"
+  receipt="$root/activation.path"
+  port_base=18640
+  if [[ "${EVIDENCESTORE_PD_HANDOFF:-lmcache}" == nixl ]]; then
+    receipt="$root/activation-nixl.path"
+    port_base=18700
+  fi
+  if [[ ! -s "$receipt" ]]; then
+    printf 'Missing runtime receipt %s. Complete Step 4 for the selected handoff.\n' "$receipt" >&2
+    exit 1
+  fi
+  source "$(cat "$receipt")"
   results="$(mktemp -d "$root/results.XXXXXX")"
   tier="$(mktemp -d "$root/disk.XXXXXX")"
   printf 'Results %s\nDisk tier %s\n' "$results" "$tier"
@@ -158,20 +213,32 @@ Still in the GPU shell, run the modes and layouts sequentially with a fresh outp
       if [[ "$mode" == disk ]]; then
         disk=(--disk-dir "$tier/$phase")
       fi
+      printf '\nRunning %s\n' "$phase"
       python -B scripts/lifecycle_run.py \
         --manifest "$root/manifest.json" --mode "$mode" --layout "$layout" \
-        --run-dir "$results/$phase" --port-base 18640 --timeout 900 "${disk[@]}"
+        --run-dir "$results/$phase" --port-base "$port_base" --timeout 900 "${disk[@]}"
     done
   done
   python -B scripts/lifecycle_compare.py "$results" | tee "$results/comparison.json"
 )
 ```
 
-If a phase fails, keep its logs and follow its `failure.json`. For a port conflict, choose a free range of six consecutive ports and retry with a fresh phase directory. For a disk I/O error, check the filesystem and the direct-I/O error receipt before retrying. A full retry with the same manifest produces a new four-phase results directory.
+If a phase fails, keep its logs and inspect `failure.json`. The shared deployment needs six consecutive ports and NIXL needs sixteen. Choose a fresh range on a port conflict. A retry with the same manifest creates a fresh results directory.
 
 ## 6. Read the results
 
 Use `comparison.json` for matched memory-versus-disk totals and output token agreement within each layout. The two layouts produce different prompts, so report their prompt sizes alongside their movement and reuse counts.
+
+For NIXL, `summary.json` reports native transferred bytes, block occurrences, and transfer time. `lmcache_by_server` records cache movement separately for each LMCache server. P/D request receipts carry D's local prefix, external prefix, model-written tail, and dispatch-to-ready time when a restore occurred. In the shared deployment, LMCache object and disk receipts describe the handoff directly. On one node these are functional NIXL measurements. Record the actual backend before interpreting network performance.
+
+Once both four-arm directories are complete, compare them from the cloned source directory.
+
+```bash
+python3 -B scripts/lifecycle_compare.py "$nixl_results" --against "$shared_results"
+```
+
+Set `nixl_results` and `shared_results` to the printed absolute results paths. The comparison checks the original manifest and turn routing and records output-token differences and whether the D reset control and total LMCache budget match.
+
 
 | Artifact per phase | What to inspect |
 | --- | --- |
@@ -282,8 +349,15 @@ If the job has multiple completed results directories, set `LIFECYCLE_RESULTS_DI
 
   export GIT_SSH_COMMAND='ssh -o BatchMode=yes'
   publisher="$(mktemp -d "$root/publish-traces.XXXXXX")"
-  branch="results/lifecycle-$SLURM_JOB_ID"
-  report="reports/lifecycle/mtrag-$SLURM_JOB_ID"
+  handoff="$(python3 -c 'import json, sys
+with open(sys.argv[1]) as stream:
+    print(json.load(stream).get("handoff", "lmcache"))' "$results/memory-chat/summary.json")"
+  suffix=""
+  if [[ "$handoff" == nixl ]]; then
+    suffix="-nixl"
+  fi
+  branch="results/lifecycle-$SLURM_JOB_ID$suffix"
+  report="reports/lifecycle/mtrag-$SLURM_JOB_ID$suffix"
   printf 'Results %s\nPublish checkout %s\n' "$results" "$publisher"
   git clone --depth=1 --single-branch --no-tags --branch kv-block-lifecycle \
     git@github.com:Kibnelson/evidence_store_2.git "$publisher"
@@ -299,7 +373,7 @@ If the job has multiple completed results directories, set `LIFECYCLE_RESULTS_DI
 )
 ```
 
-Open the results branch and select `reports/lifecycle/mtrag-<job>`. The collector validates the original manifest hash and the four passed arms before writing the report. The checksum list covers the report files, including each compressed trace and log.
+Open the results branch and select `reports/lifecycle/mtrag-<job>`. The NIXL report uses the `-nixl` suffix on the branch and directory. The collector validates the original manifest hash and the four passed arms before writing the report. The checksum list covers the report files, including each compressed trace and log.
 
 ## Stage the local donors if needed
 
