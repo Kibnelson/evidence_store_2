@@ -3,10 +3,16 @@ set -euo pipefail
 umask 077
 
 usage() {
-  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only\n' "${0##*/}"
+  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only | --resume RUNTIME ACTIVATION_RECEIPT\n' "${0##*/}"
 }
 
-if [[ "$#" != 1 ]]; then
+resume=false
+if [[ "${1:-}" == --resume && "$#" == 3 ]]; then
+  resume=true
+  saved_runtime="$2"
+  shift 2
+fi
+if [[ "$#" != 1 || ( "$resume" == true && "$1" == --* ) ]]; then
   usage >&2
   exit 2
 fi
@@ -36,8 +42,17 @@ fi
 node_root="/tmp/$(id -un)"
 mkdir -p -- "$node_root"
 [[ -d "$node_root" && -O "$node_root" && ! -L "$node_root" ]]
-runtime="$(mktemp -d "$node_root/es-kv-lifecycle-${SLURM_JOB_ID:-stage}.XXXXXX")"
-runtime="$(cd -- "$runtime" && pwd -P)"
+if "$resume"; then
+  runtime="$(cd -- "$saved_runtime" && pwd -P)"
+  [[ "$runtime" == "$(cd -- "$node_root" && pwd -P)/es-kv-lifecycle-$SLURM_JOB_ID."* &&
+      -O "$runtime" && -s "$runtime/check/sources.json" && -x "$runtime/venv/bin/python" ]] || {
+    printf 'Use a staged runtime directory from this allocation.\n' >&2
+    exit 2
+  }
+else
+  runtime="$(mktemp -d "$node_root/es-kv-lifecycle-${SLURM_JOB_ID:-stage}.XXXXXX")"
+  runtime="$(cd -- "$runtime" && pwd -P)"
+fi
 check="$runtime/check"
 mkdir -p -- "$check"
 export VLLM_LIFECYCLE_SOURCE="$runtime/build/vllm"
@@ -49,38 +64,58 @@ export LMCACHE_LIFECYCLE_SOURCE="$runtime/build/lmcache"
 
   # The checkout helper verifies detached, clean, remote-free parents with
   # their own Git objects. The scratch fetch is restricted to its file URI.
-  python3 -B - "$repo" "$checkouts" "$runtime" <<'PY'
+  python3 -B - "$repo" "$checkouts" "$runtime" "$resume" <<'PY'
 from hashlib import sha256
 import json
 from pathlib import Path
 import sys
 
-repo, checkouts, runtime = (Path(arg).resolve() for arg in sys.argv[1:])
+repo, checkouts, runtime = (Path(arg).resolve() for arg in sys.argv[1:4])
+resume = sys.argv[4] == "true"
 sys.path.insert(0, str(repo / "scripts"))
 from checkout_sources import fetch_local_commit, git, source_pins, verify
 
 pins = source_pins()
-sources = {}
+receipt = runtime / "check/sources.json"
+sources = json.loads(receipt.read_text()) if resume else {}
+overlays = repo / "third_party/lifecycle"
 for name in ("vllm", "lmcache"):
     source = checkouts / name
     commit = pins[name]
-    verify(source, commit)
     destination = runtime / "build" / name
-    destination.mkdir(parents=True)
-    fetch_local_commit(destination, source, commit)
-    git(destination, "switch", "--quiet", "--detach", "FETCH_HEAD")
-    verify(destination, commit)
-    patch = repo / "third_party" / "lifecycle" / f"{name}.patch"
-    git(destination, "apply", "--check", patch)
-    git(destination, "apply", patch)
-    sources[name] = {"commit": commit, "local_source": str(source),
-                     "scratch_source": str(destination),
-                     "patch_sha256": sha256(patch.read_bytes()).hexdigest()}
-    print(f"Staged {name} at {commit} from {source}", flush=True)
+    patch = overlays / f"{name}.patch"
+    expected = {"commit": commit, "local_source": str(source),
+                "scratch_source": str(destination),
+                "patch_sha256": sha256(patch.read_bytes()).hexdigest()}
+    if resume:
+        if any(sources[name].get(k) != v for k, v in expected.items()):
+            raise SystemExit(f"Staged source receipt differs for {name}")
+        if git(destination, "rev-parse", "HEAD").stdout.strip() != commit:
+            raise SystemExit(f"Staged source commit differs for {name}")
+        git(destination, "apply", "--reverse", "--check", patch)
+        print(f"Reusing staged {name} at {commit}", flush=True)
+    else:
+        verify(source, commit)
+        destination.mkdir(parents=True)
+        fetch_local_commit(destination, source, commit)
+        git(destination, "switch", "--quiet", "--detach", "FETCH_HEAD")
+        verify(destination, commit)
+        git(destination, "apply", "--check", patch)
+        git(destination, "apply", patch)
+        sources[name] = expected
+        print(f"Staged {name} at {commit} from {source}", flush=True)
 
-(runtime / "check" / "sources.json").write_text(
-    json.dumps(sources, indent=2) + "\n", encoding="utf-8"
-)
+# vLLM's connector CI uses the newer telemetry family. Align the installed
+# LMCache metadata with that combination so the full pip check still applies.
+patch = overlays / "telemetry.patch"
+lmcache = runtime / "build/lmcache"
+if git(lmcache, "apply", "--check", patch, check=False).returncode == 0:
+    git(lmcache, "apply", patch)
+else:
+    git(lmcache, "apply", "--reverse", "--check", patch)
+for name in ("telemetry.patch", "telemetry-constraints.txt"):
+    sources["lmcache"][name + "_sha256"] = sha256((overlays / name).read_bytes()).hexdigest()
+receipt.write_text(json.dumps(sources, indent=2) + "\n", encoding="utf-8")
 PY
   if "$stage_only"; then
     printf 'Verified local source staging at %s\n' "$check/sources.json"
@@ -112,12 +147,14 @@ PY
   mkdir -p -- "$UV_CACHE_DIR" "$UV_PYTHON_INSTALL_DIR" "$UV_PYTHON_CACHE_DIR" \
     "$HF_HUB_CACHE" "$TMPDIR" "$XDG_CACHE_HOME" "$VLLM_RPC_BASE_PATH"
 
-  uv --no-config python install --no-bin 3.12.14
-  base_python="$(env -u VIRTUAL_ENV -u CONDA_PREFIX uv --no-config --offline python find \
-    --managed-python --no-python-downloads 3.12.14)"
-  base_python="$(readlink -f -- "$base_python")"
-  [[ "$base_python" == "$UV_PYTHON_INSTALL_DIR/"* && -x "$base_python" ]]
-  uv --no-config venv --python "$base_python" --no-python-downloads "$runtime/venv"
+  if ! "$resume"; then
+    uv --no-config python install --no-bin 3.12.14
+    base_python="$(env -u VIRTUAL_ENV -u CONDA_PREFIX uv --no-config --offline python find \
+      --managed-python --no-python-downloads 3.12.14)"
+    base_python="$(readlink -f -- "$base_python")"
+    [[ "$base_python" == "$UV_PYTHON_INSTALL_DIR/"* && -x "$base_python" ]]
+    uv --no-config venv --python "$base_python" --no-python-downloads "$runtime/venv"
+  fi
   python="$runtime/venv/bin/python"
   "$python" -I -c 'import ssl, sys; assert sys.version_info[:3] == (3, 12, 14); print(sys.executable)'
 
@@ -130,7 +167,9 @@ PY
     cuda_info="$("$cuda_home/bin/nvcc" --version)" || cuda_info=""
   fi
   if [[ "$cuda_info" != *'release 13.2,'* ]]; then
-    uv --no-config pip install --python "$python" 'cuda-toolkit[nvcc,cccl]==13.2.1'
+    if ! "$resume"; then
+      uv --no-config pip install --python "$python" 'cuda-toolkit[nvcc,cccl]==13.2.1'
+    fi
     cuda_home="$("$python" -c 'import sysconfig; print(sysconfig.get_path("purelib") + "/nvidia/cu13")')"
     if [[ ! -e "$cuda_home/lib/libcudart.so" ]]; then
       test -f "$cuda_home/lib/libcudart.so.13"
@@ -153,13 +192,19 @@ CUDA
   "$CUDA_HOME/bin/nvcc" -arch=sm_86 -ccbin "$compiler" --cudart shared \
     "$TMPDIR/nvcc-probe.cu" -o "$TMPDIR/nvcc-probe"
 
-  vllm_pin="$(git -C "$VLLM_LIFECYCLE_SOURCE" rev-parse HEAD)"
-  VLLM_USE_PRECOMPILED=1 VLLM_PRECOMPILED_WHEEL_COMMIT="$vllm_pin" VLLM_PRECOMPILED_WHEEL_VARIANT=cu132 \
-    uv --no-config pip install --python "$python" --torch-backend=cu132 --editable "$VLLM_LIFECYCLE_SOURCE"
-  "$runtime/venv/bin/vllm" download-kernels
-  uv --no-config pip install --python "$python" -r "$LMCACHE_LIFECYCLE_SOURCE/requirements/build.txt"
+  reinstall=()
+  if "$resume"; then
+    reinstall=(--reinstall-package lmcache)
+  else
+    vllm_pin="$(git -C "$VLLM_LIFECYCLE_SOURCE" rev-parse HEAD)"
+    VLLM_USE_PRECOMPILED=1 VLLM_PRECOMPILED_WHEEL_COMMIT="$vllm_pin" VLLM_PRECOMPILED_WHEEL_VARIANT=cu132 \
+      uv --no-config pip install --python "$python" --torch-backend=cu132 --editable "$VLLM_LIFECYCLE_SOURCE"
+    "$runtime/venv/bin/vllm" download-kernels
+    uv --no-config pip install --python "$python" -r "$LMCACHE_LIFECYCLE_SOURCE/requirements/build.txt"
+  fi
   BUILD_WITH_CUDA=1 NO_GPU_EXT=0 LMCACHE_CUDA_MAJOR=13 \
-    uv --no-config pip install --python "$python" --no-build-isolation --editable "$LMCACHE_LIFECYCLE_SOURCE"
+    uv --no-config pip install --python "$python" --no-build-isolation "${reinstall[@]}" \
+      --constraint "$repo/third_party/lifecycle/telemetry-constraints.txt" --editable "$LMCACHE_LIFECYCLE_SOURCE"
   uv --no-config pip check --python "$python"
 
   "$python" - "$check/sources.json" <<'PY' | tee "$check/runtime.json"
@@ -213,4 +258,4 @@ PY
   printf '%s\n' "$activation" > "$receipt_tmp"
   mv -f -- "$receipt_tmp" "$receipt"
   printf 'Verified runtime activation %s\n' "$activation"
-) 2>&1 | tee "$check/setup.log"
+) 2>&1 | tee -a "$check/setup.log"

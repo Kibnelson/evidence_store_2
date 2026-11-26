@@ -102,6 +102,23 @@ Return to the `gpu-grad-01` shell inside tmux. The runtime verifies the pristine
 )
 ```
 
+If a previous Step 4 stopped with the OpenTelemetry dependency conflict, reuse the runtime path shown after `Runtime scratch` in the build log. Pull the runbook branch before resuming. The repair preserves the existing environment and vLLM install, reinstalls LMCache with the compatible OpenTelemetry requirements, and runs the full dependency and GPU checks before generating the activation receipt.
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  : "${SLURM_JOB_ID:?Run in the four-GPU allocation}"
+  root="/tmp/$(id -un)/es2-lifecycle-$SLURM_JOB_ID"
+  runtime=/tmp/nbore/REPLACE_WITH_PRINTED_RUNTIME_DIRECTORY
+  cd "$root/source"
+  GIT_SSH_COMMAND='ssh -o BatchMode=yes' git pull --ff-only
+  bash scripts/lifecycle_runtime.sh --resume "$runtime" "$root/activation.path"
+  source "$(cat "$root/activation.path")"
+  python -B scripts/lifecycle_prepare.py --output "$root/manifest.json"
+)
+```
+
 Preparation reads the pinned MT-RAG reference tasks and passage archive from the verified local checkout. It uses the saved retrieval ranks and verifies each passage identity and content hash. For an offline model cache, supply the pinned `tokenizer.json` with `--tokenizer-file /path/to/tokenizer.json`. Stage the model weights for the manifest's revision in the runtime's Hugging Face cache before starting the workers.
 
 The conversation ID is `1534a095279f2cb888fb0bea17bd70da`. For example, if turn 1 retrieved A and B and turn 2 retrieves B and C, the second prompt contains these sections in this order.
