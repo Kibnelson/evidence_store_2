@@ -119,6 +119,8 @@ If a previous Step 4 stopped with the OpenTelemetry dependency conflict, reuse t
 )
 ```
 
+If the dependency check already passed and activation stopped at the legacy `vllm._C` import, use `--verify-only` in place of `--resume` in the preceding block. It uses the installed Python environment, checks the CUDA-native vLLM extension and LMCache, then writes the same activation receipt.
+
 Preparation reads the pinned MT-RAG reference tasks and passage archive from the verified local checkout. It uses the saved retrieval ranks and verifies each passage identity and content hash. For an offline model cache, supply the pinned `tokenizer.json` with `--tokenizer-file /path/to/tokenizer.json`. Stage the model weights for the manifest's revision in the runtime's Hugging Face cache before starting the workers.
 
 The conversation ID is `1534a095279f2cb888fb0bea17bd70da`. For example, if turn 1 retrieved A and B and turn 2 retrieves B and C, the second prompt contains these sections in this order.

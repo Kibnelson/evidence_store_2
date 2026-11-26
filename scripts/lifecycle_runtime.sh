@@ -3,12 +3,16 @@ set -euo pipefail
 umask 077
 
 usage() {
-  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only | --resume RUNTIME ACTIVATION_RECEIPT\n' "${0##*/}"
+  printf 'Usage: %s ACTIVATION_RECEIPT | --stage-only | {--resume|--verify-only} RUNTIME ACTIVATION_RECEIPT\n' "${0##*/}"
 }
 
 resume=false
-if [[ "${1:-}" == --resume && "$#" == 3 ]]; then
+verify_only=false
+if [[ "$#" == 3 && ( "$1" == --resume || "$1" == --verify-only ) ]]; then
   resume=true
+  if [[ "$1" == --verify-only ]]; then
+    verify_only=true
+  fi
   saved_runtime="$2"
   shift 2
 fi
@@ -64,14 +68,14 @@ export LMCACHE_LIFECYCLE_SOURCE="$runtime/build/lmcache"
 
   # The checkout helper verifies detached, clean, remote-free parents with
   # their own Git objects. The scratch fetch is restricted to its file URI.
-  python3 -B - "$repo" "$checkouts" "$runtime" "$resume" <<'PY'
+  python3 -B - "$repo" "$checkouts" "$runtime" "$resume" "$verify_only" <<'PY'
 from hashlib import sha256
 import json
 from pathlib import Path
 import sys
 
 repo, checkouts, runtime = (Path(arg).resolve() for arg in sys.argv[1:4])
-resume = sys.argv[4] == "true"
+resume, verify_only = (arg == "true" for arg in sys.argv[4:6])
 sys.path.insert(0, str(repo / "scripts"))
 from checkout_sources import fetch_local_commit, git, source_pins, verify
 
@@ -109,7 +113,9 @@ for name in ("vllm", "lmcache"):
 # LMCache metadata with that combination so the full pip check still applies.
 patch = overlays / "telemetry.patch"
 lmcache = runtime / "build/lmcache"
-if git(lmcache, "apply", "--check", patch, check=False).returncode == 0:
+if verify_only:
+    git(lmcache, "apply", "--reverse", "--check", patch)
+elif git(lmcache, "apply", "--check", patch, check=False).returncode == 0:
     git(lmcache, "apply", patch)
 else:
     git(lmcache, "apply", "--reverse", "--check", patch)
@@ -127,12 +133,6 @@ PY
   fi
   command -v uv nvidia-smi
   nvidia-smi --query-gpu=uuid,name,driver_version --format=csv
-  if [[ -z "${CC:-}${CXX:-}" ]] && command -v gcc-13 g++-13 >/dev/null; then
-    export CC=gcc-13 CXX=g++-13
-  fi
-  export CC="${CC:-gcc}" CXX="${CXX:-g++}"
-  command -v "$CC" "$CXX"
-  compiler="$(command -v "$CXX")"
   unset PYTHONHOME PYTHONOPTIMIZE VLLM_USE_V2_MODEL_RUNNER TRANSFORMERS_CACHE
   unset VLLM_USE_PRECOMPILED VLLM_USE_PRECOMPILED_RUST VLLM_PRECOMPILED_WHEEL_LOCATION \
     VLLM_PRECOMPILED_WHEEL_COMMIT VLLM_PRECOMPILED_WHEEL_VARIANT
@@ -182,29 +182,37 @@ PY
   [[ "$cuda_info" == *'release 13.2,'* ]]
   printf 'CUDA toolkit %s\n%s\n' "$CUDA_HOME" "$cuda_info"
 
-  cat > "$TMPDIR/nvcc-probe.cu" <<'CUDA'
+  if ! "$verify_only"; then
+    if [[ -z "${CC:-}${CXX:-}" ]] && command -v gcc-13 g++-13 >/dev/null; then
+      export CC=gcc-13 CXX=g++-13
+    fi
+    export CC="${CC:-gcc}" CXX="${CXX:-g++}"
+    command -v "$CC" "$CXX"
+    compiler="$(command -v "$CXX")"
+    cat > "$TMPDIR/nvcc-probe.cu" <<'CUDA'
 #include <cuda_runtime.h>
 #include <cub/cub.cuh>
 
 __global__ void probe() {}
 int main() { return static_cast<int>(cudaGetLastError()); }
 CUDA
-  "$CUDA_HOME/bin/nvcc" -arch=sm_86 -ccbin "$compiler" --cudart shared \
-    "$TMPDIR/nvcc-probe.cu" -o "$TMPDIR/nvcc-probe"
+    "$CUDA_HOME/bin/nvcc" -arch=sm_86 -ccbin "$compiler" --cudart shared \
+      "$TMPDIR/nvcc-probe.cu" -o "$TMPDIR/nvcc-probe"
 
-  reinstall=()
-  if "$resume"; then
-    reinstall=(--reinstall-package lmcache)
-  else
-    vllm_pin="$(git -C "$VLLM_LIFECYCLE_SOURCE" rev-parse HEAD)"
-    VLLM_USE_PRECOMPILED=1 VLLM_PRECOMPILED_WHEEL_COMMIT="$vllm_pin" VLLM_PRECOMPILED_WHEEL_VARIANT=cu132 \
-      uv --no-config pip install --python "$python" --torch-backend=cu132 --editable "$VLLM_LIFECYCLE_SOURCE"
-    "$runtime/venv/bin/vllm" download-kernels
-    uv --no-config pip install --python "$python" -r "$LMCACHE_LIFECYCLE_SOURCE/requirements/build.txt"
+    reinstall=()
+    if "$resume"; then
+      reinstall=(--reinstall-package lmcache)
+    else
+      vllm_pin="$(git -C "$VLLM_LIFECYCLE_SOURCE" rev-parse HEAD)"
+      VLLM_USE_PRECOMPILED=1 VLLM_PRECOMPILED_WHEEL_COMMIT="$vllm_pin" VLLM_PRECOMPILED_WHEEL_VARIANT=cu132 \
+        uv --no-config pip install --python "$python" --torch-backend=cu132 --editable "$VLLM_LIFECYCLE_SOURCE"
+      "$runtime/venv/bin/vllm" download-kernels
+      uv --no-config pip install --python "$python" -r "$LMCACHE_LIFECYCLE_SOURCE/requirements/build.txt"
+    fi
+    BUILD_WITH_CUDA=1 NO_GPU_EXT=0 LMCACHE_CUDA_MAJOR=13 \
+      uv --no-config pip install --python "$python" --no-build-isolation "${reinstall[@]}" \
+        --constraint "$repo/third_party/lifecycle/telemetry-constraints.txt" --editable "$LMCACHE_LIFECYCLE_SOURCE"
   fi
-  BUILD_WITH_CUDA=1 NO_GPU_EXT=0 LMCACHE_CUDA_MAJOR=13 \
-    uv --no-config pip install --python "$python" --no-build-isolation "${reinstall[@]}" \
-      --constraint "$repo/third_party/lifecycle/telemetry-constraints.txt" --editable "$LMCACHE_LIFECYCLE_SOURCE"
   uv --no-config pip check --python "$python"
 
   "$python" - "$check/sources.json" <<'PY' | tee "$check/runtime.json"
@@ -216,7 +224,7 @@ import sys
 
 import torch
 import vllm
-import vllm._C
+from vllm import _C_stable_libtorch as vllm_cuda
 import lmcache
 import lmcache.cuda_ops
 from lmcache.integration.vllm.lmcache_mp_connector import LMCacheMPConnector
@@ -224,6 +232,8 @@ from vllm.v1.worker.gpu.lifecycle import emit_kv_writes
 
 if torch.cuda.device_count() != 4 or torch.version.cuda != "13.2":
     raise SystemExit("Expected Torch CUDA 13.2 with exactly four visible GPUs")
+if not hasattr(torch.ops._C_cache_ops, "reshape_and_cache_flash"):
+    raise SystemExit("The vLLM CUDA extension did not register the KV cache write operator")
 for module, name in ((vllm, "VLLM"), (lmcache, "LMCACHE")):
     if not Path(module.__file__).resolve().is_relative_to(os.environ[f"{name}_LIFECYCLE_SOURCE"]):
         raise SystemExit(f"Expected scratch editable module for {name}: {module.__file__}")
@@ -232,7 +242,7 @@ print(json.dumps({
     "versions": {name: version(name) for name in ("vllm", "lmcache", "torch")},
     "torch_cuda": torch.version.cuda,
     "gpu_count": torch.cuda.device_count(),
-    "vllm_native": vllm._C.__file__,
+    "vllm_native": vllm_cuda.__file__,
     "lmcache_native": lmcache.cuda_ops.__file__,
     "model_write_hook": emit_kv_writes.__module__,
     "connector": LMCacheMPConnector.__module__,
