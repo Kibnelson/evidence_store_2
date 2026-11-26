@@ -12,6 +12,8 @@ Each conversation has eight arms. The matrix is **per-engine or shared LMCache �
 
 The plan keeps the exact six ranked passages per turn from the saved CLAPNQ workloads. It starts with the original pilot, then follows the frozen workload order. Two candidate conversations exceed the existing 8,191-token prompt budget and are listed in `campaign.json`. The largest selected prompt has 8,177 tokens. The conservative maximum disk bound for any one arm is 11.11 GiB, based on the full 256-token objects P and D could write. The runner checks free space before each disk arm and reclaims completed disk objects between arms. Failed attempts keep their logs and scratch for inspection. [Cohort preparation](../scripts/lifecycle_scale_prepare.py) · [Campaign runner](../scripts/lifecycle_scale_run.py)
 
+Prompt preparation reads questions and prior reference answers from MT-RAG's `reference.jsonl`. The six passages per turn come from the saved V1 retrieval ranks in the frozen workloads. V2 resolves those passage IDs and checks their text hashes against the pinned CLAPNQ passage archive. For the five-turn pilot, chat includes six passages on each turn and carry-forward includes 6, 12, 18, 24, and 30 passage occurrences. [Prompt preparation](../scripts/lifecycle_prepare.py) · [Pilot ranks](../workloads/mtrag-multi-turn-repeat.json)
+
 ## 1. Prepare the four-GPU allocation
 
 Start a new Slurm job for the end-to-end test. Run 3 builds a new runtime and regenerates the prompts from the pinned MT-RAG checkout and the workload files in V2. The first prompt manifest is compared with the saved checksum for job `30750`. The source checkouts, `uv` downloads, and model files can be reused as build inputs. Each arm starts with empty GPU and LMCache caches.
@@ -192,4 +194,69 @@ After the first report is published, run this with `through=5`. Use `through=10`
 
 If a run stops, repeat the same command in the allocation. Completed local arms can be reused, incomplete attempts move under `failed/`, and verified published conversations are skipped. To resume from a new allocation, restore the source commit recorded in the campaign's `provenance.json`, build the verified NIXL runtime there, and regenerate the plan. The runner checks that the plan SHA-256 matches the published campaign before continuing.
 
-Once GitHub verifies the last desired checkpoint, its prompts, reports, and raw trace bundles remain available for CPU review. Release the original Slurm GPU shell with `exit` after checking the published archive and the scratch you want to remove.
+## 7. Clear job scratch and release the GPUs
+
+Open the last desired checkpoint on GitHub and verify its trace bundles before cleanup. The launcher reclaims each successful arm's disk objects and each published conversation's local traces. The job directory still contains the clone, launch and build logs, any failed attempts, and any local review exports. Save the local diagnostics or exports you need before removing the job directory.
+
+Run this block in the original GPU shell. The activation receipt identifies the runtime for this Slurm job. The block checks for active workers and moves the verified source checkouts into the staged donor location when that path is available. The initial `cd /` keeps the GPU shell in an existing directory after deletion.
+
+```bash
+cd /
+(
+  set -euo pipefail
+  : "${SLURM_JOB_ID:?Run inside the original Slurm allocation}"
+  test "$(hostname -s)" = gpu-grad-01
+
+  node="/tmp/$(id -un)"
+  root="$node/es2-lifecycle-$SLURM_JOB_ID"
+  receipt="$root/activation-nixl.path"
+  if ! [[ -f "$receipt" && -O "$receipt" && ! -L "$receipt" ]]; then
+    printf 'Expected a local activation receipt at %s\n' "$receipt" >&2
+    exit 1
+  fi
+  activation="$(cat "$receipt")"
+  runtime="$(dirname -- "$activation")"
+  suffix=${runtime##*.}
+  if ! [[ "$activation" == "$runtime/activate.sh" &&
+          "$runtime" == "$node/es-kv-lifecycle-$SLURM_JOB_ID.$suffix" &&
+          "$suffix" =~ ^[[:alnum:]]{6}$ ]]; then
+    printf 'Activation receipt does not point to this job runtime. Cleanup stopped.\n' >&2
+    exit 1
+  fi
+  for path in "$node" "$root" "$runtime"; do
+    if ! [[ -d "$path" && -O "$path" && ! -L "$path" && "$(realpath -e -- "$path")" == "$path" ]]; then
+      printf 'Unexpected scratch path %s. Cleanup stopped.\n' "$path" >&2
+      exit 1
+    fi
+  done
+
+  gpu_pids="$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)"
+  workers="[e]s-kv-lifecycle-$SLURM_JOB_ID[.]$suffix/|[e]s2-lifecycle-$SLURM_JOB_ID/source/scripts/lifecycle_"
+  if [[ -n "$gpu_pids" ]] || pgrep -af -u "$(id -u)" "$workers"; then
+    printf 'A GPU process or lifecycle worker is still active. Cleanup stopped.\n' >&2
+    exit 1
+  fi
+
+  donors="$node/es2-lifecycle-donors"
+  if [[ ! -e "$donors" && ! -L "$donors" ]]; then
+    python3 -B "$root/source/scripts/checkout_sources.py" --verify vllm lmcache mt-rag
+    mv -T -- "$root/source/third_party/checkouts" "$donors"
+  fi
+
+  du -sch -- "$root" "$runtime"
+  rm -rf --one-file-system -- "$root" "$runtime"
+  df -h "$node"
+)
+```
+
+`uv-cache` can still hold packages after the runtime is deleted. Check its size and clear it if you need more free space and no other build is using it. The next build can download the packages again. Keep `huggingface` for the model weights and `es2-lifecycle-donors` for the pinned source checkouts.
+
+```bash
+node="/tmp/$(id -un)"
+du -sh "$node/uv-cache"
+uv cache clean --cache-dir "$node/uv-cache"
+df -h "$node"
+du -xhd1 "$node" | sort -hr | head -12
+```
+
+Run `exit` from the original GPU shell to release the allocation. On the login node, `squeue --me` shows whether the job has left the queue.
