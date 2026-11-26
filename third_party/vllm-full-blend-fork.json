@@ -1,0 +1,13 @@
+{
+  "base_commit": "0fc695fc6d1d82e9a5ac6835ac8e4e1c83703665",
+  "source_commit": "164debe6ae34aeaea8384912f6e7733011052f53",
+  "ref": "refs/heads/evidencestore/legacy-full-blend",
+  "bundle_sha256": "488cf36ecc023f10f73242035a66a9189e202579ac2fe6e64dd6e409e9981f99",
+  "historical_repository": "https://github.com/Kibnelson/context_pilot_paper",
+  "historical_commit": "e25c6fbba1075760894e230147ca28c630cd7ece",
+  "historical_path": "server/sources/vllm-v0.23.0-sched",
+  "historical_base_tree": "4163b1ca859c5dd51e5e7d29b6298009608a489a",
+  "historical_assembly_sha256": "85e4511b48a4a2599c76ab5576477eb90beaaddedd28d6557d8cb1cd0f59c2d4",
+  "historical_tree": "d179535b6e7110b632d880273225323ca86a0822",
+  "historical_slurm_job": 29538
+}

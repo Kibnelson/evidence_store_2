@@ -1,0 +1,11 @@
+{
+  "base_commit": "389b9cfcb5cec502dbba6b5d13725bf2e024610d",
+  "source_commit": "c5c0b8e497149696760d6c970774e6b4e6059907",
+  "ref": "refs/heads/evidencestore/legacy-full-blend",
+  "bundle_sha256": "0dfa6fb65907a617b75293b64170f576414f02cf6052e2bb4f2759a9c774fd89",
+  "historical_repository": "https://github.com/Kibnelson/context_pilot_paper",
+  "historical_commit": "e25c6fbba1075760894e230147ca28c630cd7ece",
+  "historical_path": "server/sources/lmcache-v0.5.0-sched",
+  "historical_tree": "78f1dacf0b454fad5be4f40582ef260df834ed91",
+  "historical_slurm_job": 29538
+}

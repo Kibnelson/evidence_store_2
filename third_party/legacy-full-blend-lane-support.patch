@@ -1,0 +1,814 @@
+--- a/vllm/vllm/v1/worker/gpu_model_runner.py
++++ b/vllm/vllm/v1/worker/gpu_model_runner.py
+@@ -230,11 +230,11 @@
+ # (pre-D7). ``init_lane_state_routing`` MUST be called at the FIRST
+ # line of ``__init__`` — before any of those 22 attributes is
+ # written — otherwise the descriptor's ``__set__`` fails loud.
+-from scheduler.execution.lane_runner_state import (
++from vllm.v1.worker._legacy_lane_runner_state import (
+     LaneRunnerState,
+     clone_attn_groups_for_lane,
+ )
+-from scheduler.execution.lane_state_fields import (
++from vllm.v1.worker._legacy_lane_state_fields import (
+     LaneStateField,
+     init_lane_state_routing,
+ )
+@@ -436,7 +436,7 @@
+ ):
+     # Phase 1B.c D2 Batch 3 — 22 canonical lane-local descriptors.
+     # Order MUST match
+-    # ``scheduler.execution.lane_state_fields.LANE_LOCAL_FIELDS``
++    # ``_legacy_lane_state_fields.LANE_LOCAL_FIELDS``
+     # exactly (that module's ``__set_name__`` refuses any name
+     # outside the canonical set, so a drift here would fail at
+     # class-body execution rather than at runtime).
+@@ -975,7 +975,7 @@
+         # V1 text-only guard, the mm reset the API server triggers
+         # at boot is bookkeeping only — nothing has been populated
+         # into the LI runner yet.
+-        from scheduler.execution.lane_state_fields import (
++        from vllm.v1.worker._legacy_lane_state_fields import (
+             is_full_owner_retired,
+         )
+         if not is_full_owner_retired(self):
+@@ -995,7 +995,7 @@
+         # must exist or the call MUST raise loudly). Skip under
+         # retirement is justified by the V1 generate-only + text-
+         # only SPLIT boot guard.
+-        from scheduler.execution.lane_state_fields import (
++        from vllm.v1.worker._legacy_lane_state_fields import (
+             is_full_owner_retired,
+         )
+         if not is_full_owner_retired(self):
+@@ -6555,7 +6555,7 @@
+         # cleanup below MUST still run. NO early ``return`` from
+         # this method under retirement; that would leak native
+         # resources on shutdown.
+-        from scheduler.execution.lane_state_fields import (
++        from vllm.v1.worker._legacy_lane_state_fields import (
+             is_full_owner_retired,
+         )
+         if not is_full_owner_retired(self) and hasattr(self, "attn_groups"):
+--- /dev/null
++++ b/vllm/vllm/v1/worker/_legacy_lane_state_fields.py
+@@ -0,0 +1,463 @@
++"""Phase 1B.c D2 — TLS-backed lane-state routing descriptor.
++
++Zero vLLM imports. Testable locally without a vLLM install.
++
++Codex D2 v5 + Batch 1 hardening (2026-09-11):
++
++- A single module-level ``threading.local()`` holds a **binding**
++  tuple ``(runner, state)`` for the calling thread, not just a
++  bare state. Descriptor access verifies the bound ``runner`` is
++  the same instance being accessed — a lane state can only route
++  reads/writes to the runner it was bound against.
++- :class:`LaneStateField` is a descriptor installed on
++  ``GPUModelRunner`` for each of the 22 canonical lane-local
++  attributes. Semantics:
++    * Bound + runner matches: route to ``state.<name>``.
++    * Bound + runner mismatch: :class:`LaneStateAccessError`.
++    * Bound + state closed: :class:`LaneStateAccessError`.
++    * Unbound + calling thread is the FULL owner (identified at
++      ``GPUModelRunner.__init__``): route to base storage.
++    * Unbound + non-owner thread: :class:`LaneStateAccessError`.
++- :func:`init_lane_state_routing` is one-shot; a second call on
++  the same runner raises :class:`LaneStateAccessError`.
++- :func:`bind_lane_state` rejects nested / overwriting bindings.
++- FULL-owner retirement is provided by :func:`retire_full_owner`
++  (landed here). D7 calls it once before flipping
++  ``_handoff_ready=True``. **D7-blocker carried forward from Batch
++  1 approval**: retirement drops base storage, but native
++  ``GPUModelRunner.shutdown()`` still accesses lane-local fields
++  such as ``attn_groups`` through the descriptor. SPLIT MUST
++  remain locked until D7 resolves this (either by deferring
++  retirement until after shutdown finishes, or by teaching
++  shutdown to short-circuit lane-local reads under retirement).
++  See the :func:`retire_full_owner` docstring for details.
++
++This is DIFFERENT from ``ThreadLocalField`` at
++``server/sources/vllm-v0.23.0-sched/vllm/v1/core/sched/_tls_fields.py``:
++that descriptor stores per-thread values directly. ``LaneStateField``
++routes reads/writes through a bound :class:`LaneRunnerState` that is
++runner-specific.
++"""
++
++from __future__ import annotations
++
++import threading
++from typing import Any, Optional, Tuple
++
++
++# Codex D2 v5 — 22-field canonical tuple. Order-sensitive; matches
++# the ``LaneRunnerState`` dataclass declaration.
++LANE_LOCAL_FIELDS: Tuple[str, ...] = (
++    # Staging buffers (12 — Codex-named).
++    "input_ids",
++    "positions",
++    "query_start_loc",
++    "seq_lens",
++    "optimistic_seq_lens_cpu",
++    "num_computed_tokens",
++    "req_indices",
++    "prev_positions",
++    "num_scheduled_tokens",
++    "query_pos",
++    "discard_request_mask",
++    "num_accepted_tokens",
++    # Output staging (2).
++    "transfer_event",
++    "sampled_token_ids_pinned_cpu",
++    # Request-set state (4).
++    "requests",
++    "num_prompt_logprobs",
++    "input_batch",
++    "encoder_cache",
++    # Execute -> sample handoff + connector output (2).
++    "execute_model_state",
++    "kv_connector_output",
++    # Mutable helpers (2).
++    "late_interaction_runner",
++    "attn_groups",
++)
++
++
++# Codex D2 Batch 1 review — explicit raises so ``python -O`` cannot
++# strip the invariant check.
++if len(LANE_LOCAL_FIELDS) != 22:
++    raise RuntimeError(
++        "LANE_LOCAL_FIELDS must have exactly 22 entries — Codex D2 v5 canonical"
++    )
++if len(set(LANE_LOCAL_FIELDS)) != 22:
++    raise RuntimeError("LANE_LOCAL_FIELDS entries must be unique")
++
++
++# --- Module-level TLS binding (runner, state) ------------------------
++
++_lane_binding = threading.local()
++
++
++class LaneStateAccessError(RuntimeError):
++    """Raised on any policy violation of the lane-state routing
++    contract: unbound non-owner access, nested binding, wrong-runner
++    access, access after close, or missing runtime init.
++    """
++
++
++def bind_lane_state(runner: Any, state: Any) -> None:
++    """Bind ``(runner, state)`` as the current thread's lane binding.
++
++    Codex D2 Batch 1 review (hardening):
++
++    - Rejects nested / overwriting bindings — a worker thread binds
++      exactly once at step 6 of the 9-step init sequence and never
++      re-binds until it teardown-unbinds.
++    - Rejects a closed state — post-close bindings would route reads
++      to a torn-down state and mask the bug.
++    - Rejects a caller that does not own the state — the state's
++      ``_owner_thread_ident`` (set in
++      :meth:`LaneRunnerState.__post_init__`) must match the current
++      thread. Otherwise lane A could bind lane B's state.
++    """
++
++    current = getattr(_lane_binding, "binding", None)
++    if current is not None:
++        prior_runner, prior_state = current
++        raise LaneStateAccessError(
++            f"nested bind_lane_state() forbidden; already bound to "
++            f"runner id={id(prior_runner):#x}, "
++            f"state lane_id={getattr(prior_state, 'lane_id', '<?>')!r}. "
++            f"Unbind first."
++        )
++
++    # Codex Batch 1: reject a closed state.
++    if getattr(state, "_closed", False):
++        raise LaneStateAccessError(
++            f"bind_lane_state() refused: state lane_id="
++            f"{getattr(state, 'lane_id', '<?>')!r} is closed; a closed "
++            f"LaneRunnerState is terminal and cannot be reused."
++        )
++
++    # Codex Batch 1: caller must own the state (i.e., must be the
++    # thread that constructed it). Prevents lane A grabbing lane B's
++    # state.
++    state_owner = getattr(state, "_owner_thread_ident", None)
++    caller_ident = threading.get_ident()
++    if state_owner is None:
++        raise LaneStateAccessError(
++            f"bind_lane_state() refused: state lane_id="
++            f"{getattr(state, 'lane_id', '<?>')!r} has no owner ident "
++            f"(is it a real LaneRunnerState?)"
++        )
++    if state_owner != caller_ident:
++        raise LaneStateAccessError(
++            f"bind_lane_state() refused: state lane_id="
++            f"{getattr(state, 'lane_id', '<?>')!r} is owned by thread "
++            f"{state_owner}, but bind is being called from thread "
++            f"{caller_ident}. LaneRunnerState must be constructed AND "
++            f"bound by the same worker thread."
++        )
++
++    _lane_binding.binding = (runner, state)
++
++
++def unbind_lane_state(runner: Any, state: Any) -> None:
++    """Clear the current thread's lane-state binding after validating
++    it matches the arguments.
++
++    Codex D2 Batch 1 review: unbind must confirm the caller is
++    releasing THEIR binding, not some other thread's. Signature
++    changed from bare ``unbind_lane_state()`` to
++    ``unbind_lane_state(runner, state)``.
++
++    Raises :class:`LaneStateAccessError` if there is no active
++    binding, or if the active binding does not match ``runner``
++    / ``state`` by identity.
++    """
++
++    current = getattr(_lane_binding, "binding", None)
++    if current is None:
++        raise LaneStateAccessError(
++            f"unbind_lane_state() refused: no active binding on thread "
++            f"{threading.get_ident()}."
++        )
++    bound_runner, bound_state = current
++    if bound_runner is not runner:
++        raise LaneStateAccessError(
++            f"unbind_lane_state() runner mismatch: bound to "
++            f"id={id(bound_runner):#x}, unbind requested with "
++            f"id={id(runner):#x}."
++        )
++    if bound_state is not state:
++        raise LaneStateAccessError(
++            f"unbind_lane_state() state mismatch: bound to lane_id="
++            f"{getattr(bound_state, 'lane_id', '<?>')!r}, unbind "
++            f"requested with lane_id="
++            f"{getattr(state, 'lane_id', '<?>')!r}."
++        )
++    _lane_binding.binding = None
++
++
++def _clear_lane_binding_for_test() -> None:
++    """Test-only unvalidated unbind. NEVER call from production code.
++
++    Cleans up after a test that raised mid-binding or otherwise
++    left ``_lane_binding.binding`` non-None. Production paths must
++    use :func:`unbind_lane_state` with validated args.
++    """
++
++    _lane_binding.binding = None
++
++
++def current_lane_state() -> Optional[Any]:
++    """Return the current thread's bound :class:`LaneRunnerState`,
++    or ``None`` if unbound. Read-only introspection helper.
++    """
++
++    binding = getattr(_lane_binding, "binding", None)
++    return binding[1] if binding is not None else None
++
++
++def current_lane_binding() -> Optional[Tuple[Any, Any]]:
++    """Return the current thread's ``(runner, state)`` binding tuple,
++    or ``None`` if unbound. Used by :class:`LaneStateField` to verify
++    runner identity.
++    """
++
++    return getattr(_lane_binding, "binding", None)
++
++
++# --- FULL-owner identity + base-storage init on the instance -------
++#
++# Called from ``GPUModelRunner.__init__`` at its FIRST line, BEFORE any
++# descriptor-managed attribute is assigned. Establishes:
++# - ``instance._lane_owner_ident`` — thread ident of the FULL owner
++#   (the thread constructing the runner).
++# - ``instance._lane_base_storage`` — a dict holding the FULL-path
++#   value for each lane-local field.
++#
++# One-shot: calling twice on the same instance fails loud (Codex D2
++# Batch 1 review — prevents accidental re-init that would silently
++# swap the FULL owner and orphan base storage).
++
++
++_OWNER_IDENT_KEY = "_lane_owner_ident"
++_BASE_STORAGE_KEY = "_lane_base_storage"
++
++
++def init_lane_state_routing(instance: Any) -> None:
++    """Initialize FULL-owner identity + base storage on ``instance``.
++
++    Must be called BEFORE any ``LaneStateField`` on this instance is
++    assigned. One-shot: subsequent calls on the same instance raise
++    :class:`LaneStateAccessError`.
++    """
++
++    if _OWNER_IDENT_KEY in instance.__dict__:
++        raise LaneStateAccessError(
++            f"init_lane_state_routing() already called on "
++            f"{type(instance).__name__} id={id(instance):#x}. "
++            f"One-shot per instance."
++        )
++    instance.__dict__[_OWNER_IDENT_KEY] = threading.get_ident()
++    instance.__dict__[_BASE_STORAGE_KEY] = {}
++
++
++def _owner_ident(instance: Any) -> int:
++    try:
++        return instance.__dict__[_OWNER_IDENT_KEY]
++    except KeyError as exc:
++        raise LaneStateAccessError(
++            f"init_lane_state_routing() was not called on "
++            f"{type(instance).__name__} before LaneStateField access; "
++            f"FULL owner identity is unknown."
++        ) from exc
++
++
++def _base_storage(instance: Any) -> dict:
++    try:
++        return instance.__dict__[_BASE_STORAGE_KEY]
++    except KeyError as exc:
++        raise LaneStateAccessError(
++            f"init_lane_state_routing() was not called on "
++            f"{type(instance).__name__} before LaneStateField access; "
++            f"base storage dict is missing."
++        ) from exc
++
++
++# --- Executable FULL-owner retirement (pre-D7 gate) -----------------
++#
++# Codex D2 Batch 1: "Add executable FULL-owner retirement before
++# ``_handoff_ready=True``." D7's readiness flip calls this once,
++# BEFORE setting ``scheduler._handoff_ready=True``. After retirement:
++# - Any UNBOUND access (even from what was the owner thread) fails
++#   loud with :class:`LaneStateAccessError`.
++# - Bound access (a proper lane worker with a bound LaneRunnerState)
++#   is unaffected — that's the SPLIT path.
++# - Base storage is dropped so a memory-holding shared reference
++#   cannot mask a bug.
++
++
++_RETIRED_KEY = "_lane_owner_retired"
++
++
++def retire_full_owner(instance: Any) -> None:
++    """Retire the FULL owner. One-shot; subsequent calls raise.
++
++    Called by D7 BEFORE flipping ``_handoff_ready=True``. Enforces
++    the fixed-SPLIT invariant: once SPLIT is reachable, no thread
++    (including the former FULL owner) may touch base storage.
++
++    **D7-blocker (Codex Batch 1 approval note, 2026-09-11):**
++    This function drops base storage on retirement. Native
++    ``GPUModelRunner.shutdown()`` (in the vendored vLLM tree) later
++    accesses lane-local fields such as ``attn_groups`` through the
++    descriptor. Under retirement, that access will raise
++    :class:`LaneStateAccessError`. SPLIT MUST remain locked until
++    D7 resolves this — either by deferring the retirement call
++    until after ``GPUModelRunner.shutdown()`` has fully run, or by
++    adding a ``retire_full_owner()`` variant that keeps
++    shutdown-visible fields backed while still forbidding SPLIT
++    concurrent access. Do NOT call this from D2/D3/D4/D5/D6 code
++    paths.
++    """
++
++    if _RETIRED_KEY in instance.__dict__:
++        raise LaneStateAccessError(
++            f"retire_full_owner() already called on "
++            f"{type(instance).__name__} id={id(instance):#x}. One-shot."
++        )
++    # Base storage is DROPPED — any subsequent unbound access will
++    # ``_base_storage`` -> KeyError -> LaneStateAccessError. The
++    # descriptor's owner-ident check now cannot pass either because
++    # we clear the owner-ident sentinel below.
++    instance.__dict__.pop(_BASE_STORAGE_KEY, None)
++    # Set owner to a sentinel that no live thread can match: -1.
++    # Combined with the retired flag, this makes the diagnostic on
++    # any misuse point at retirement rather than at missing init.
++    instance.__dict__[_OWNER_IDENT_KEY] = -1
++    instance.__dict__[_RETIRED_KEY] = True
++
++
++def is_full_owner_retired(instance: Any) -> bool:
++    """Read-only introspection: has :func:`retire_full_owner` run?"""
++
++    return instance.__dict__.get(_RETIRED_KEY, False)
++
++
++# --- The descriptor itself ------------------------------------------
++
++
++class LaneStateField:
++    """Instance-descriptor that routes reads/writes to the currently
++    bound :class:`LaneRunnerState`, falling back to instance base
++    storage when the FULL owner is the caller, and failing loudly for
++    any other case.
++
++    Placement: one ``LaneStateField`` on ``GPUModelRunner`` per entry
++    of :data:`LANE_LOCAL_FIELDS`.
++
++    Ordering contract (Codex D2 v5): the enclosing class's
++    ``__init__`` MUST call :func:`init_lane_state_routing` BEFORE it
++    assigns any of the 22 lane-local fields.
++    """
++
++    __slots__ = ("_field_name",)
++
++    def __init__(self) -> None:
++        self._field_name: Optional[str] = None
++
++    def __set_name__(self, owner: type, name: str) -> None:
++        if name not in LANE_LOCAL_FIELDS:
++            raise TypeError(
++                f"LaneStateField installed under name {name!r} which is "
++                f"not in LANE_LOCAL_FIELDS. Only the 22 canonical field "
++                f"names are permitted."
++            )
++        self._field_name = name
++
++    def __get__(self, instance: Any, owner: Optional[type] = None) -> Any:
++        # Class access returns the descriptor itself (mirror the
++        # ThreadLocalField convention).
++        if instance is None:
++            return self
++
++        binding = current_lane_binding()
++        if binding is not None:
++            bound_runner, state = binding
++            if bound_runner is not instance:
++                raise LaneStateAccessError(
++                    f"LaneStateField {self._field_name!r} accessed on "
++                    f"runner id={id(instance):#x} but current binding "
++                    f"is for runner id={id(bound_runner):#x}. Bindings "
++                    f"are runner-specific; a lane state can only route "
++                    f"reads/writes to the runner it was bound against."
++                )
++            if getattr(state, "_closed", False):
++                raise LaneStateAccessError(
++                    f"LaneStateField {self._field_name!r} accessed on "
++                    f"CLOSED lane state (lane_id="
++                    f"{getattr(state, 'lane_id', '<?>')!r}). State was "
++                    f"terminally closed by worker exit."
++                )
++            return getattr(state, self._field_name)
++
++        # Unbound: only the FULL owner may access base storage.
++        # Codex Batch 1: retirement is a distinct failure mode from
++        # never-inited; give a specific diagnostic.
++        if is_full_owner_retired(instance):
++            raise LaneStateAccessError(
++                f"Lane-local field {self._field_name!r} accessed from "
++                f"thread {threading.get_ident()} without a bound "
++                f"LaneRunnerState, but the FULL owner has been retired "
++                f"(pre-D7 gate ran). Every access must go through a "
++                f"bound LaneRunnerState under fixed-SPLIT."
++            )
++        if threading.get_ident() != _owner_ident(instance):
++            raise LaneStateAccessError(
++                f"Lane-local field {self._field_name!r} accessed from "
++                f"non-owner thread {threading.get_ident()} without a "
++                f"bound LaneRunnerState. FULL owner is "
++                f"{_owner_ident(instance)}. Call bind_lane_state() "
++                f"before touching this field on a lane worker thread."
++            )
++
++        base = _base_storage(instance)
++        try:
++            return base[self._field_name]
++        except KeyError as exc:
++            raise AttributeError(
++                f"{type(instance).__name__}.{self._field_name} not yet "
++                f"initialized on the FULL owner (base storage empty)."
++            ) from exc
++
++    def __set__(self, instance: Any, value: Any) -> None:
++        binding = current_lane_binding()
++        if binding is not None:
++            bound_runner, state = binding
++            if bound_runner is not instance:
++                raise LaneStateAccessError(
++                    f"LaneStateField {self._field_name!r} written on "
++                    f"runner id={id(instance):#x} but current binding "
++                    f"is for runner id={id(bound_runner):#x}."
++                )
++            if getattr(state, "_closed", False):
++                raise LaneStateAccessError(
++                    f"LaneStateField {self._field_name!r} written on "
++                    f"CLOSED lane state (lane_id="
++                    f"{getattr(state, 'lane_id', '<?>')!r})."
++                )
++            setattr(state, self._field_name, value)
++            return
++
++        if is_full_owner_retired(instance):
++            raise LaneStateAccessError(
++                f"Lane-local field {self._field_name!r} written from "
++                f"thread {threading.get_ident()} without a bound "
++                f"LaneRunnerState, but the FULL owner has been retired."
++            )
++        if threading.get_ident() != _owner_ident(instance):
++            raise LaneStateAccessError(
++                f"Lane-local field {self._field_name!r} written from "
++                f"non-owner thread {threading.get_ident()} without a "
++                f"bound LaneRunnerState. FULL owner is "
++                f"{_owner_ident(instance)}."
++            )
++
++        _base_storage(instance)[self._field_name] = value
+--- /dev/null
++++ b/vllm/vllm/v1/worker/_legacy_lane_runner_state.py
+@@ -0,0 +1,293 @@
++"""Phase 1B.c D2 — LaneRunnerState + per-lane attn_groups clone helper.
++
++Owns the 22 canonical lane-local fields for one Green-Context lane
++(DECODE, PREP_slot_0, PREP_slot_1). Constructed at step 5 of the
++9-step init sequence (Codex D2 v5), bound to TLS at step 6, mutated
++by native ``execute_model`` / ``sample_tokens`` under
++``LaneStateField`` routing, and torn down on worker exit.
++
++Codex D2 v5 + Batch 1 hardening (2026-09-11):
++
++- Field names + order match
++  :data:`vllm.v1.worker._legacy_lane_state_fields.LANE_LOCAL_FIELDS`
++  exactly. Drift check compares the ordered dataclass-field tuple
++  directly (Codex Batch 1 — sets would let a reorder pass).
++- ``attn_groups`` clones use the AttentionGroup class's native
++  ``create_metadata_builders(vllm_config, device, kernel_block_size,
++  num_metadata_builders=1)`` method (Codex Batch 1 — real field
++  name is ``.backend``, and using the native factory keeps
++  block-size conversion, config, and device handling native).
++- ``layer_names`` is defensively copied (fresh list) so no builder
++  aliases the canonical.
++- ``close()`` is terminal + owner-thread-only + idempotent: it
++  detaches references (sets fields to ``None``) rather than
++  ``.clear()``-ing containers that could be aliased elsewhere.
++- V1 rejects ``parallel_config.use_ubatching`` (see boot guards);
++  ``num_metadata_builders`` is fixed at 1 here.
++"""
++
++from __future__ import annotations
++
++import threading
++from dataclasses import dataclass, field
++from typing import Any, List, Sequence, Tuple
++
++from vllm.v1.worker._legacy_lane_state_fields import (
++    LANE_LOCAL_FIELDS,
++    LaneStateAccessError,
++)
++
++
++# ``Any`` typing is deliberate — this module stays free of vLLM
++# imports so unit tests can construct ``LaneRunnerState`` locally
++# without a CUDA / vLLM install. Type comments below indicate the
++# runtime shape for reader guidance.
++
++
++@dataclass
++class LaneRunnerState:
++    """Per-lane mutable state owned by one worker thread.
++
++    Field order matches :data:`LANE_LOCAL_FIELDS`. Any drift between
++    the two is caught by ``__post_init__``'s ordered comparison.
++    """
++
++    lane_id: str
++
++    # Staging buffers (12; Codex v5 canonical).
++    input_ids: Any = None                     # PagedBuffer[int32]
++    positions: Any = None                     # torch.Tensor[int64]
++    query_start_loc: Any = None               # PagedBuffer[int32]
++    seq_lens: Any = None                      # torch.Tensor[int32]
++    optimistic_seq_lens_cpu: Any = None       # torch.Tensor[int32] (CPU)
++    num_computed_tokens: Any = None           # torch.Tensor[int32]
++    req_indices: Any = None                   # PagedBuffer[int64]
++    prev_positions: Any = None                # PagedBuffer[int64]
++    num_scheduled_tokens: Any = None          # PagedBuffer[int32]
++    query_pos: Any = None                     # PagedBuffer[int64]
++    discard_request_mask: Any = None          # PagedBuffer[bool]
++    num_accepted_tokens: Any = None           # PagedBuffer[int32]
++
++    # Output staging (2).
++    transfer_event: Any = None                # torch.cuda.Event
++    sampled_token_ids_pinned_cpu: Any = None  # pinned torch.Tensor
++
++    # Request-set state (4).
++    requests: dict = field(default_factory=dict)
++    num_prompt_logprobs: dict = field(default_factory=dict)
++    input_batch: Any = None                   # InputBatch
++    encoder_cache: dict = field(default_factory=dict)
++
++    # Execute -> sample handoff + connector output (2).
++    execute_model_state: Any = None
++    kv_connector_output: Any = None
++
++    # Mutable helpers (2).
++    late_interaction_runner: Any = None       # LateInteractionRunner instance
++    attn_groups: List[List[Any]] = field(default_factory=list)  # list[list[AttentionGroup]]
++
++    def __post_init__(self) -> None:
++        # Codex Batch 1 review — ordered comparison (not set):
++        # ``__dataclass_fields__`` preserves insertion order in
++        # Python 3.7+. Compare the tuple minus ``lane_id`` against
++        # ``LANE_LOCAL_FIELDS`` directly. A reorder is a drift and
++        # must fail loud.
++        ordered = tuple(
++            name
++            for name in self.__dataclass_fields__.keys()
++            if name != "lane_id"
++        )
++        if ordered != LANE_LOCAL_FIELDS:
++            raise TypeError(
++                f"LaneRunnerState field order drift:\n"
++                f"  declared: {ordered}\n"
++                f"  canonical: {LANE_LOCAL_FIELDS}"
++            )
++        # Terminal-close bookkeeping (owner thread + closed flag).
++        # Not dataclass fields (would show in drift check); regular
++        # instance attributes.
++        self._owner_thread_ident: int = threading.get_ident()
++        self._closed: bool = False
++
++    def close(self) -> None:
++        """Terminal, owner-thread-only, idempotent teardown.
++
++        Codex Batch 1 review: DETACH references (setattr None) rather
++        than clearing containers, because the canonical FULL owner
++        or another module may still hold aliases. After close, any
++        subsequent access via ``LaneStateField`` raises
++        :class:`LaneStateAccessError` (closed-state guard in the
++        descriptor).
++        """
++
++        if self._closed:
++            # Idempotent — double-close is a no-op.
++            return
++        if threading.get_ident() != self._owner_thread_ident:
++            raise LaneStateAccessError(
++                f"LaneRunnerState.close() called from thread "
++                f"{threading.get_ident()} but state is owned by "
++                f"thread {self._owner_thread_ident} (lane_id="
++                f"{self.lane_id!r}). close() is owner-thread-only."
++            )
++        for name in LANE_LOCAL_FIELDS:
++            # Detach: replace the reference on this state with None.
++            # Aliases held elsewhere are unaffected (Codex-required).
++            setattr(self, name, None)
++        self._closed = True
++
++
++# --- Per-lane attn_groups clone helper -------------------------------
++#
++# Codex D2 v5 + Batch 1: "Copy layer_names, create fresh builders with
++# exact _kernel_block_sizes[group_id], and prove no builder identities
++# are shared." Use the AttentionGroup's native
++# ``create_metadata_builders`` so block-size conversion, config, and
++# device handling remain native. The nested ``create_attn_groups``
++# inside ``GPUModelRunner._create_attn_groups(...)`` at
++# ``gpu_model_runner.py:6748`` is not externally reachable; we clone
++# the constructed structure element-wise using the group class's
++# real field names + native builder factory.
++
++
++def clone_attn_groups_for_lane(
++    canonical: Sequence[Sequence[Any]],
++    *,
++    kernel_block_sizes: Sequence[Any],
++    vllm_config: Any,
++    device: Any,
++) -> List[List[Any]]:
++    """Return a lane-local ``list[list[AttentionGroup]]`` with fresh
++    metadata builders and defensively-copied ``layer_names``.
++
++    Parameters
++    ----------
++    canonical:
++        The FULL owner's ``GPUModelRunner.attn_groups`` after boot,
++        used purely as a shape + backend + spec + group_id source.
++        Never mutated.
++    kernel_block_sizes:
++        The FULL owner's ``_kernel_block_sizes`` list, indexed by
++        KV-cache group id. Each group id's block size is passed
++        verbatim into the native
++        ``AttentionGroup.create_metadata_builders(...)``.
++    vllm_config, device:
++        Passed through to the native
++        ``AttentionGroup.create_metadata_builders(...)`` so
++        block-size conversion, config handling, and device
++        placement remain native (Codex Batch 1 review).
++
++    Returns
++    -------
++    A list-of-lists mirroring ``canonical``'s shape. Each inner
++    ``AttentionGroup`` has:
++
++    - The SAME ``backend`` type reference (stateless strategy).
++    - The SAME ``kv_cache_spec`` reference (immutable).
++    - A defensively-copied ``layer_names`` list.
++    - Fresh metadata builders constructed via the group's native
++      ``create_metadata_builders``.
++    - The SAME ``kv_cache_group_id`` scalar.
++
++    Raises
++    ------
++    ValueError
++        If any ``AttentionGroup``'s ``kv_cache_group_id`` does not
++        match its outer index in ``canonical`` (Codex Batch 1
++        review — validate group IDs).
++    IndexError
++        If ``kernel_block_sizes`` is shorter than ``canonical``.
++    """
++
++    if len(kernel_block_sizes) < len(canonical):
++        raise IndexError(
++            f"kernel_block_sizes len={len(kernel_block_sizes)} < "
++            f"canonical len={len(canonical)}; cannot index group_id."
++        )
++
++    lane_groups: List[List[Any]] = []
++    for gid, canonical_group_list in enumerate(canonical):
++        lane_group_list: List[Any] = []
++        for ai, canonical_group in enumerate(canonical_group_list):
++            # Validate group IDs (Codex Batch 1).
++            declared_gid = getattr(canonical_group, "kv_cache_group_id", None)
++            if declared_gid != gid:
++                raise ValueError(
++                    f"AttentionGroup at ({gid}, {ai}) has "
++                    f"kv_cache_group_id={declared_gid!r}; expected {gid}."
++                )
++            lane_group_list.append(
++                _clone_attention_group(
++                    canonical_group,
++                    block_size=kernel_block_sizes[gid],
++                    vllm_config=vllm_config,
++                    device=device,
++                )
++            )
++        lane_groups.append(lane_group_list)
++    return lane_groups
++
++
++def _clone_attention_group(
++    canonical_group: Any,
++    *,
++    block_size: Any,
++    vllm_config: Any,
++    device: Any,
++) -> Any:
++    """Element-wise clone of one ``AttentionGroup``.
++
++    Uses the real field name ``.backend`` (Codex Batch 1 review;
++    v3/v4 mis-named this as ``.attn_backend``). Uses the group
++    class's native ``create_metadata_builders`` method so the
++    builder-construction path is byte-identical to the canonical
++    factory except for the fresh builder identity.
++    """
++
++    cls = type(canonical_group)
++    backend = canonical_group.backend
++    kv_cache_spec = canonical_group.kv_cache_spec
++    kv_cache_group_id = canonical_group.kv_cache_group_id
++    # Defensive layer_names copy — mutable list, could be aliased.
++    layer_names = list(canonical_group.layer_names)
++
++    # Construct with an empty ``metadata_builders`` slot, then let
++    # the native method populate it.
++    lane_group = cls(backend, layer_names, kv_cache_spec, kv_cache_group_id)
++    lane_group.create_metadata_builders(
++        vllm_config,
++        device,
++        kernel_block_size=block_size,
++        num_metadata_builders=1,  # V1 rejects ubatching at boot
++    )
++    return lane_group
++
++
++def assert_no_shared_builder_identities(
++    lane_groups_per_worker: Sequence[Sequence[Sequence[Any]]],
++) -> None:
++    """Sanity check for the concurrency test.
++
++    Given a sequence of ``lane_groups`` (one per worker), verifies
++    that no two workers hold the same metadata-builder identity
++    anywhere. Codex D2 v5 explicit: "prove no builder identities
++    are shared."
++    """
++
++    seen_ids: dict = {}
++    for wi, per_worker in enumerate(lane_groups_per_worker):
++        for gi, per_group in enumerate(per_worker):
++            for ai, attn_group in enumerate(per_group):
++                for bi, builder in enumerate(attn_group.metadata_builders):
++                    ident = id(builder)
++                    if ident in seen_ids:
++                        prior = seen_ids[ident]
++                        raise AssertionError(
++                            f"metadata_builder id={ident:#x} shared "
++                            f"between worker {prior[0]} group "
++                            f"({prior[1]},{prior[2]},{prior[3]}) and "
++                            f"worker {wi} group ({gi},{ai},{bi}). "
++                            f"Codex D2 v5 requires fresh builders "
++                            f"per lane."
++                        )
++                    seen_ids[ident] = (wi, gi, ai, bi)

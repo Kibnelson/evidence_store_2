@@ -1,0 +1,52 @@
+--- a/vllm/vllm/v1/attention/backends/flash_attn.py
++++ b/vllm/vllm/v1/attention/backends/flash_attn.py
+@@ -860,15 +860,6 @@
+             # we use direct Q, K, V tensors without caching
+             return
+
+-        # A configured producer fuses exact row fingerprints into this final
+-        # byte write, including suffixes and last-token overwrites after Blend.
+-        from scheduler.v2.phase1_write_fingerprints import try_native_scatter
+-
+-        if try_native_scatter(
+-            key, value, kv_cache, slot_mapping, self.kv_cache_dtype
+-        ):
+-            return
+-
+         # Scatter write into the KV cache using slot_mapping indices.
+         # No TMA kernel is invoked here, so stride canonicalization is not needed.
+         key_cache, value_cache = kv_cache.unbind(1)
+--- a/lmcache/lmcache/v1/gpu_connector/gpu_connectors.py
++++ b/lmcache/lmcache/v1/gpu_connector/gpu_connectors.py
+@@ -2112,26 +2112,14 @@
+                     )
+                     if _blend_trace:
+                         _active_start_ns = time.perf_counter_ns()
+-                    # The registered B-only tracker replaces this write with
+-                    # one byte-preserving scatter/SHA kernel. Native restores
+-                    # and model writes outside this path keep their own hooks.
+-                    from scheduler.v2.phase1_write_fingerprints import (
+-                        try_blend_scatter,
+-                    )
+-
+-                    if not try_blend_scatter(
++                    lmc_ops.single_layer_kv_transfer(
+                         self.buffer_mapping[layer_id - 2].tensor,
+                         self.kvcaches[layer_id - 2],
+                         slot_mapping_full,
+-                    ):
+-                        lmc_ops.single_layer_kv_transfer(
+-                            self.buffer_mapping[layer_id - 2].tensor,
+-                            self.kvcaches[layer_id - 2],
+-                            slot_mapping_full,
+-                            lmc_ops.TransferDirection.H2D,
+-                            self.engine_kv_format,
+-                            token_major=False,  # [2, num_tokens, hidden_dim]
+-                        )
++                        lmc_ops.TransferDirection.H2D,
++                        self.engine_kv_format,
++                        token_major=False,  # [2, num_tokens, hidden_dim]
++                    )
+                     if _blend_trace:
+                         _elapsed_ns = time.perf_counter_ns() - _active_start_ns
+                         _scatter_enqueue_ns += _elapsed_ns

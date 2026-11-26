@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "dataset": "mtrag",
+  "native_reference_run": "native-vllm-30453-20261119T031129Z",
+  "native_reference_cohort": "1p3d-native",
+  "regression_conversations": [
+    "0208bf26ec357a803445290fa88a2e9e",
+    "1534a095279f2cb888fb0bea17bd70da",
+    "a2698b2973ea7db1ee5adb5e70ec02e4",
+    "a3f07e9ed5f257db6aecd30511f03af1",
+    "c1e53df98a28f19448f4af244304b89a",
+    "cfbcfa3e382f12aed450b10f87a72aeb"
+  ],
+  "selection_method": "Held-out CLAPNQ conversation from frozen native retrieval reference, paired with original CLAPNQ conversations for the document carry-forward ablation",
+  "domains": {
+    "clapnq": {
+      "archive_requests_sha256": "f3f9c1b169b06864839feb5e892b025d17596309eedc3d69c8401161d793e1fd",
+      "queries_sha256": "05350ba69ed161df7a0ce85a4ddb1789ebe75ec9f9d0b6648d9c4527695b8944",
+      "corpus_sha256": "faf5458bc8dbeb372a024e5ee7f2fee107413e2800975160a75d9089bdc84485",
+      "conversations": 29,
+      "turns": 224
+    }
+  },
+  "conversations": [
+    {
+      "domain": "clapnq",
+      "conversation_id": "3f5fa378239f7475baac89fa40288aaa",
+      "turn_window": "1:6",
+      "turns": 6,
+      "archived_repeated_chunk_occurrences": 3,
+      "archived_chunk_occurrences": 36,
+      "native_retrieval_reference": [
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>1",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:3de8c733dd8a002c8fed50d11e61b85f7debf0be95a3662d60c989a3e2bc0403",
+              "chunk_id": "mtrag:clapnq:chunk:c410402e8011633e7fddda40fa9b16ff66bf9b6184a96434cdff15b38e35f5e8",
+              "chunk_version": "2a934dad5dbc82718412a6dc37a14b8012ae9f73a4ac0f85bcec0b1240468e29",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:3de8c733dd8a002c8fed50d11e61b85f7debf0be95a3662d60c989a3e2bc0403",
+              "chunk_id": "mtrag:clapnq:chunk:76a776ea40c3058f2d6b84adae033d0066473e5587231c73224bcecbe1ef0e91",
+              "chunk_version": "41752dca471601a69e6e8fe20776e0eed0c320a515c5e14690bb9417fcc3771f",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:ab7fc13dea265d5f546fb9994fc4743e2c9577feb6b042926e9230caee44371e",
+              "chunk_id": "mtrag:clapnq:chunk:b179595a99e04a350df54c0784c80b048ff2bcdf11e438eca53415964f1b5286",
+              "chunk_version": "126d77db88b38273150c27d0ce1c9b39622f7c65c004aaa69aca9180fd3e5f95",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:e17436606ac6fc6160e84f2597fbba96e98ab43b806942a4859585bddb3515b0",
+              "chunk_id": "mtrag:clapnq:chunk:90359a618d7a23e1027baa50c5f472342d3976b4cddce9e9524903976e8e27fe",
+              "chunk_version": "cee266541b86e91152b415a0f35045091bae544a6e1b3de6da99c18d8a16ed40",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:ab7fc13dea265d5f546fb9994fc4743e2c9577feb6b042926e9230caee44371e",
+              "chunk_id": "mtrag:clapnq:chunk:e241078f93b986b947977db9a255dff9ddbac3d028fa1d7b46812c9e4cd4f103",
+              "chunk_version": "cf723a593917ea0281c34d6bb3208a76409b3aa45de1346b9fbf3059688676cd",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:3de8c733dd8a002c8fed50d11e61b85f7debf0be95a3662d60c989a3e2bc0403",
+              "chunk_id": "mtrag:clapnq:chunk:20c134d5697fb51801802198e2752672e2d4d6af7b7542911d741d7fcde225fa",
+              "chunk_version": "853d63ac9875c8324ec55beec224b70b5f582f99c1ad6d67a1c7fc89574d1774",
+              "rank": 6
+            }
+          ]
+        },
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>2",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:63fee20452b79ca7298855007d4bd90350a4d49bafa68ba5b20a38d31e35705d",
+              "chunk_version": "fdda539818246adaf68d4c593e83f54410bc5fbb10092b41ded753b429b38c9a",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:7b345e9fcd1af7ee568057c1ad407962e8b330f270a3f2b1d1aed9e69cba1010",
+              "chunk_version": "11b43d352caf26bb9b61e364ba1b04b7c16dae74fa739a68f432abf2d12ee32c",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:c91b116deae9b9dbac5ec23191178a7d27ccc33589433b8129402c4143447569",
+              "chunk_version": "61dc0cebd01e275761f161a1071e8b950fd453e574bce895678623855fceabae",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:93fe318281a31c04ef35ec7f6a024e5f92372cbe30becea1849c9dee0372c628",
+              "chunk_version": "08d44eb11980d6cd88a414b2804a6f537ebcf3fcc1ff073ab28b712a05dada3d",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:324653cdf5d722c035d1434e1a37382cb87621759d5f9040d9b7fd63a6b8f163",
+              "chunk_version": "59a3f7e58bc18a3512be519ce7c7ee1b9c006a1400e3353f1433c7719f79042d",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:c1b7fdbfdf3a945f0770bace4a8440b07eecfa8fd7e6ce1ed53eb47391404862",
+              "chunk_version": "e92fbbb523dde9da96666f2d568a1be47da652ead22cc090d94918ac9638f7a5",
+              "rank": 6
+            }
+          ]
+        },
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>3",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:3de8c733dd8a002c8fed50d11e61b85f7debf0be95a3662d60c989a3e2bc0403",
+              "chunk_id": "mtrag:clapnq:chunk:dd158dfa93a7c18d6660c2384ae83feb08f643285e8b5415192f1383ebe868f9",
+              "chunk_version": "3a59393057cfe66415eee3eec8bfb279d18f5411f6842ff4990b1f77e9380e41",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:3d14091859d901ba727bc7ea36fdcc2ade26f271b68dc1d97f2595288d88a624",
+              "chunk_version": "2b797629becac6b8cbc1296208b82c235c873dd581bd280d74d05335a0589199",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d42a01287468440dba57e8619f2f1b42628535e8f74c2ca1a685d1731df65f17",
+              "chunk_id": "mtrag:clapnq:chunk:0a107be4dedbbb5c973a963f25f6a7363fb07181dd4415ecd59a6763f083c7a5",
+              "chunk_version": "a35cb73a11117923269c615024dbd3d723c178f1c5efa925f7fa3979138acddd",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:3de8c733dd8a002c8fed50d11e61b85f7debf0be95a3662d60c989a3e2bc0403",
+              "chunk_id": "mtrag:clapnq:chunk:76a776ea40c3058f2d6b84adae033d0066473e5587231c73224bcecbe1ef0e91",
+              "chunk_version": "41752dca471601a69e6e8fe20776e0eed0c320a515c5e14690bb9417fcc3771f",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:c1b7fdbfdf3a945f0770bace4a8440b07eecfa8fd7e6ce1ed53eb47391404862",
+              "chunk_version": "e92fbbb523dde9da96666f2d568a1be47da652ead22cc090d94918ac9638f7a5",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:cef3e95d28748025f540241231df0c4412fb74d9d55b5b65b15b633518e496ba",
+              "chunk_id": "mtrag:clapnq:chunk:9df55489f9e7c0b646842242afa635fdd4c97ab50889ba510d0f8381a9f64caa",
+              "chunk_version": "b065814b54ba8ee923324c2ee2ec8bb18d8cab16d78e3a6d9bbc2620588bd577",
+              "rank": 6
+            }
+          ]
+        },
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>4",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:1cf26130df411752bbdb5c34ad6731b9464a84fea10cca55e9af1e397809e855",
+              "chunk_version": "4c1193d64b59741fd644d1f4dcc667b30555518d751cb10f9e640fa571c7d3a0",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:8bbb166ef92c2784ce7181559976518b2df24fb21fd357557a63c9eb41d9516f",
+              "chunk_version": "bf7061fc42f5bbc565511726a6b2cea192a6c075dda0ba7cdd1601698ed43d12",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:80b23707ae71458ff7c678748bd6a3e331bb1f4d3c3a7e15c7222c2fdbc013e2",
+              "chunk_version": "233c71c8b1d913de35b774862bcc48ec84c551ac54647051c26095739ef62586",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:97bb80ca169cce12fbc6800aa7bfa5c9e3013df8f9e42529b95813854dd2693d",
+              "chunk_version": "bc9acdf027d85ce7adaa5f294ef223a64f346ce09a36a7ba284fff0d62abe381",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:0edf6fa5ebe47ff728a60cc41532c191054a8d2d0892443267981a9b313d2b32",
+              "chunk_version": "f941875fb9941d6d0d92dd12bf7bb6049ac25f750692cf90aa2443d516ce405b",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:d33f478f63806cdd00031d27146d2fa87f5798fa7992235038d655ec8e1d1d30",
+              "chunk_version": "4f3f7b73f6aef34a8d05368f4619ce840309a7cc98a2fb614f132d96faa04183",
+              "rank": 6
+            }
+          ]
+        },
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>5",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:29e733525c1bf5ef0c2d02e92c2f3b24d0307e3d2465fa90d29fa29f35a3cf31",
+              "chunk_version": "0da3b0c143434c2189996f3622dcbbe478279302aa8a9187643508e2bbc7edd2",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:63b44bbd09b5d845d3b08b522e4b3d89b96735d046727e364652aee5863e99bd",
+              "chunk_version": "26803063c5b7a0fd8b6ce5ed8f715b6fd9ccc557ac640d49aef7ae8d352234bf",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:52ef557ff6a4bc83a8a27352b37b7f0fd009ea92ffaeaf38ff8445f3bdf8d053",
+              "chunk_version": "08b8c342ec32ab06e02d09ff65470c486152e27673bce2adf1ba6f1e50be87c1",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:a013e690112ebd703b95756ef6f7e2020727b70ca7d4f1729308514d04f5d6c8",
+              "chunk_version": "9da5e47a5df7ceb1e58c8e1b2014f3fd38bae0b82e4b6e1b7f890b5e3750eb82",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:1fb531e21332efaa5f2add3cfc26eeef1e6ffac4bd254db82e49ade67bf51945",
+              "chunk_version": "25f9a79d0e7e19c2eba3a9f8ba132ecbbd5cc19f05211d23f6992ec4b11fb76c",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:6169bb954b021400e70d3841e729191e2e7b9079e06cb2028fe67736e572da57",
+              "chunk_id": "mtrag:clapnq:chunk:735a6bb77ac06097fa6cffa3e8f33cca8840c3cfa1141cb08edd3178c22a8b70",
+              "chunk_version": "c14db905a509b15e76915b586d13cadb69f80861b5f8f4032e73fc3137319b81",
+              "rank": 6
+            }
+          ]
+        },
+        {
+          "request_key": "mtrag:3f5fa378239f7475baac89fa40288aaa<::>6",
+          "evidence": [
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:cc53d180f5dfbb71891f97ecb646bccacf6afcf7608ce084fbd1ab14e17cd1cf",
+              "chunk_version": "0b9af38e439ab348318675423ed8994b8141c5e41150ab1350946a9391343dba",
+              "rank": 1
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:b4078db8bfef50111c2103b71ea4a37c561c0ff84aa7c72b415f08adb2b22b55",
+              "chunk_version": "da9ead69e667f4651d3906b7775b77edbd5bfbe9b8c278263d8197264817c64d",
+              "rank": 2
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:1cf26130df411752bbdb5c34ad6731b9464a84fea10cca55e9af1e397809e855",
+              "chunk_version": "4c1193d64b59741fd644d1f4dcc667b30555518d751cb10f9e640fa571c7d3a0",
+              "rank": 3
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:ad2db2698c7dc02e38d5ddfa5c73871cf1271ca9cae069b26488ab6055296458",
+              "chunk_version": "ba2bc69a625973934fa8edbfe9b5b9d03264abcba6f211285782e51a251186b8",
+              "rank": 4
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:d677e2e1eec5bb41b02355711520d44a0218d7c400b4f1a77d1cfc39a67bff94",
+              "chunk_id": "mtrag:clapnq:chunk:1e94fd739253614f099af01604c72ee2af2a9abe7bf9795ea4d8afb480b5c292",
+              "chunk_version": "a64c64d976c2f13ec2fc2df7a69e0e97cc46c801c1540861311e5b77c9df0c9b",
+              "rank": 5
+            },
+            {
+              "doc_id": "mtrag:clapnq:doc:05ccc56b5bd4ae4f325cfbbbba9fb0f7665ab4777e8dff5cd165bf3a5e3b0607",
+              "chunk_id": "mtrag:clapnq:chunk:b84a20dce77e6fde4c8c62fc9922f68b16c4bd654d6717bf1a2173752ae72109",
+              "chunk_version": "7c2ae604ba1cbe53ab56242958f54b969bc6de6c1a458f78385f65546fd9d874",
+              "rank": 6
+            }
+          ]
+        }
+      ],
+      "stage_end": 60
+    }
+  ]
+}

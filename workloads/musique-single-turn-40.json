@@ -1,0 +1,2539 @@
+{
+  "schema_version": 1,
+  "workload": "musique-single-turn-40",
+  "dataset": "musique",
+  "domain": null,
+  "request_keys": [
+    "musique:3hop1__132795_40769_64047",
+    "musique:3hop1__379231_40769_64047",
+    "musique:3hop2__222979_133099_40768",
+    "musique:3hop1__132967_40769_64047",
+    "musique:3hop2__222979_132628_40768",
+    "musique:3hop2__222979_133154_40768",
+    "musique:3hop2__132957_133292_40768",
+    "musique:3hop2__132957_222979_40768",
+    "musique:3hop1__133292_40769_64047",
+    "musique:3hop2__222979_132957_40768",
+    "musique:3hop2__132957_52222_40768",
+    "musique:3hop1__483843_40769_64047",
+    "musique:3hop2__132957_800948_40768",
+    "musique:3hop1__593597_40769_64047",
+    "musique:3hop2__132957_483843_40768",
+    "musique:3hop1__222979_40769_64047",
+    "musique:3hop2__132957_433432_40768",
+    "musique:3hop2__132957_379231_40768",
+    "musique:3hop2__222979_132477_40768",
+    "musique:3hop2__132957_295815_40768",
+    "musique:3hop2__222979_840908_40768",
+    "musique:3hop1__133264_40769_64047",
+    "musique:3hop2__132957_593597_40768",
+    "musique:3hop1__595371_40769_64047",
+    "musique:3hop2__222979_380281_40768",
+    "musique:3hop1__132798_40769_64047",
+    "musique:3hop1__51933_40769_64047",
+    "musique:3hop1__295815_40769_64047",
+    "musique:3hop2__222979_132536_40768",
+    "musique:3hop2__132957_133264_40768",
+    "musique:3hop1__76377_40769_64047",
+    "musique:3hop2__132957_132968_40768",
+    "musique:3hop2__132957_132967_40768",
+    "musique:3hop2__132957_595371_40768",
+    "musique:3hop1__52222_40769_64047",
+    "musique:3hop1__800948_40769_64047",
+    "musique:3hop2__132957_51933_40768",
+    "musique:3hop1__132968_40769_64047",
+    "musique:3hop2__132957_132798_40768",
+    "musique:3hop2__132957_76377_40768"
+  ],
+  "provenance": {
+    "campaign": "native-vllm-30453-20261119T031129Z",
+    "cohort": "1p3d-native",
+    "source_sha256": "15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b",
+    "corpus_sha256": "7b27c9b548715923381dad531f6a2fba8c21ea3689b218175de772e244ee7930",
+    "source_queries_sha256": "4c06f85e5c85786e1305f09a39cab6ba28df321f25ace3330efc3f2eef5a1f38",
+    "index_sha256": null,
+    "index_sha256_note": "The baseline review packet did not retain the serialized Faiss index hash.",
+    "request_evidence_sha256": "0119bffc1b1ef2130b530e1f4522c711871b5769cb4641236ef00bb367516a45",
+    "response_receipts_sha256": "723fca6783bdd3e2b22df995d848397c1bebc2804ba910ec51f1a4e756b487c9",
+    "checkpoint_summary_sha256": "d20d119118a17e9bd055bd336f1235c5f13b721aab545217f4ad52d3ce2a87f7",
+    "tokenizer": {
+      "model": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "tokenizer_json_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+    }
+  },
+  "selection": {
+    "method": "Minimize the union of versioned chunk identities among 40 distinct questions with a multi-start overlap search, one-for-one swaps, and partial rebuilds. Order the strongest set found to favor shifted matches in leading evidence on earlier requests.",
+    "eligible_requests": 2417,
+    "requests": 40,
+    "evidence_occurrences": 240,
+    "unique_chunks": 31,
+    "repeat_occurrences": 209,
+    "shifted_repeat_occurrences": 208,
+    "leading_evidence_opportunities_1b": {
+      "repeat_occurrences": 199,
+      "shifted_repeat_occurrences": 198
+    },
+    "leading_evidence_opportunities_2b_round_robin": {
+      "repeat_occurrences": 187,
+      "shifted_repeat_occurrences": 186
+    },
+    "replay_scope": "Opportunity counts use identical versioned evidence token segments and archived retrieval order. Leading evidence stops at the first chunk unseen on that worker. GPU restore and repair are measured in replay.",
+    "hop_counts": {
+      "3hop1": 16,
+      "3hop2": 24
+    },
+    "per_request": [
+      {
+        "request_key": "musique:3hop1__132795_40769_64047",
+        "prompt_tokens": 994,
+        "prompt_sha256": "9a8da3ea1ba71782072854e1eea26c95efa9407733cc7c61d4e0a2d8762e8d3b",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:20273916f8a782251c97f126ce8b4933a1b8fcd8baac7afe44d51c027cdd4466",
+            "chunk_id": "musique:chunk:1b29aad3175354ffe1aa85272c7025d68b93716474f9c4bb81e95f1c2f82e792",
+            "chunk_version": "d1201edfc9158ae7515e0eb1c4ef6e29de34982b4636cca7e59f4b23e08f9584",
+            "start_token": 11,
+            "end_token": 149,
+            "segment_token_sha256": "acabfb37e7f155037fbea86102c70a1cab578e2d65e6dd329fc288d5e72d8b42",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 150,
+            "end_token": 276,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 277,
+            "end_token": 454,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 455,
+            "end_token": 633,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:59b996dc3e158ec07a79039d405ccfc1745aeda0aac8d7b5387e75240013ed6a",
+            "chunk_id": "musique:chunk:981e4b13f57986c215a7045751a854ca2bb0883042a7e688246a4d0354022ca2",
+            "chunk_version": "9956a7a5fb4a59ca83795b6bcd6af3d623570518d535518389135d054a7fffc0",
+            "start_token": 634,
+            "end_token": 845,
+            "segment_token_sha256": "353e836f1385181a9f3b82e5d975deaff3829f02f351b2e93d43fd973f74f911",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f27731cb5d5e27d17da9bfa8042bf86f891025bb6ebcfd00fd3f5a1a03f6423a",
+            "chunk_id": "musique:chunk:571f13a7e23ed76a43f5f1157321a75aa192e1d376abde0368089789334419e7",
+            "chunk_version": "dace1f3cf489f5b7a0ce2a48c7a2ce7975f84807dbb68eaa43d4893f37227a75",
+            "start_token": 846,
+            "end_token": 958,
+            "segment_token_sha256": "6a2744c0d0bb69bfbea9b2640cf927cf71ecfb324259945e7b0b1e62becb751e",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__379231_40769_64047",
+        "prompt_tokens": 1190,
+        "prompt_sha256": "9b2692ff3ce2871a4bb5dff40218e50756dfee3becdd7f3a962f27075d60eb3a",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 189,
+            "end_token": 367,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 368,
+            "end_token": 494,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 495,
+            "end_token": 812,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:c0df4a000f7dcaa78ec8801aa26accea4d022b79e540f54da421bedddd9c53ea",
+            "chunk_id": "musique:chunk:3a5f728659919d604f7034b7074b001e17f6c09f535a9ae22cb5668fbdedebff",
+            "chunk_version": "2a24ee7db6f30400215262b8b62c126da463fa051d3b76cb7d9b85efaa14a1eb",
+            "start_token": 813,
+            "end_token": 956,
+            "segment_token_sha256": "7cc9cad85549cc4e53fda195b0c47cf799b31503e67bc516f44902982bbf8ab6",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 957,
+            "end_token": 1163,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_133099_40768",
+        "prompt_tokens": 1078,
+        "prompt_sha256": "296b828802009de18e0f21f227933498aaf4a8cd45d9751279130e3db02336cd",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:e34b99cdf17ed53b8cd5f9b10b7adbce752e0f7622540cc8da0a2b56a6b79c51",
+            "chunk_id": "musique:chunk:a65d19d70df1f1075ad8cbd83e9e1e27e2a873d1949f7b61e956e40851373c2d",
+            "chunk_version": "beb64796ca470893ec592a42c3827dbb1752643df9edd135f4431a970b07a0b1",
+            "start_token": 11,
+            "end_token": 167,
+            "segment_token_sha256": "0bf87461e2f3eb8b11556d63277b5c2f94f3e3d44a559a647fbb5df3f97ef4ad",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 168,
+            "end_token": 317,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 318,
+            "end_token": 471,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 472,
+            "end_token": 736,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:db481610a70efdc72a98bbc2f9ee1326a1138247b979aa114ed5d65ef771f682",
+            "chunk_id": "musique:chunk:4d895691b80f1c1ad27e84edc96378dcdac1bab968a466edc1e9da4b9ffda006",
+            "chunk_version": "1ef276b0d6cfe4f597b916013f5fcc94557ff7441039280d2d858d1fd99286d3",
+            "start_token": 737,
+            "end_token": 880,
+            "segment_token_sha256": "fcae2115a4cc5ef143dd67b86f101dddaa3c47c5783545904992794eea91ee26",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 881,
+            "end_token": 1044,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__132967_40769_64047",
+        "prompt_tokens": 1139,
+        "prompt_sha256": "f6f5362567ff6b27363327478cfc704f08b8a85cf81f28726d3ae063fc7e8953",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 11,
+            "end_token": 189,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 190,
+            "end_token": 367,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 368,
+            "end_token": 574,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:af214975a34ef51f2ca6371420beac3b9a5f9a1147fba72f103865896c4efeeb",
+            "chunk_id": "musique:chunk:15629ce8bf2e5e6a060e161aefbe1e0fa2d8517bd48dc307b12617981a67cf5a",
+            "chunk_version": "e67383f18a83eaba000d78f8979132506bff2ec7c4989e5eaac3ddf1b884f232",
+            "start_token": 575,
+            "end_token": 747,
+            "segment_token_sha256": "b06baf96a1d26a027ba93d1bccbcc026362eed298b4271ce8047e12c9ac4c476",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 748,
+            "end_token": 874,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 875,
+            "end_token": 1105,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_132628_40768",
+        "prompt_tokens": 1243,
+        "prompt_sha256": "f038b73ade4354be4338fdd7dd100c05c7e9563f4456f362116615868f969b05",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 11,
+            "end_token": 275,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 276,
+            "end_token": 429,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:95ba7e17490e71e497fd14a434a5713eb6e80f77cbd6dac56c02ec406270f582",
+            "chunk_id": "musique:chunk:c339740f89b95d95f59f710297745da4927b6b36ed1cdfe057ce1c1d04bf0ef6",
+            "chunk_version": "1b758238fbb0e690fd1bb73c5145b5b6980f0c49ea5f870b52a88e3dbec6fa99",
+            "start_token": 430,
+            "end_token": 619,
+            "segment_token_sha256": "9787691294e63a2385a73425015784d67f726998543b336a9f39b1b035cf650d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:57e05be2894da1f79c828000f1968c08425a306d717b1a3dfd5d65d2b944c9e1",
+            "chunk_id": "musique:chunk:4b508beec412a0a12e39444d22f837d0e8436e63e8a1bdee8ac1c6ad9f723154",
+            "chunk_version": "834262ff001b9af207e36b3ac876daf058993d96fc93b5a6890a8a0b80b3982e",
+            "start_token": 620,
+            "end_token": 859,
+            "segment_token_sha256": "c2183649d947479a46e2d388ec553494b1ae2e92ad4fb6d2402c2cbc7f769887",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:213832271b9e653fac2f5b6d8c44335de621d9859bbe49b45fa8409ed0d81fd0",
+            "chunk_id": "musique:chunk:ddfdf0a30c7433ccf41427db1370ee50c57fa8dcc7130cf3976c05dab8bb6152",
+            "chunk_version": "a383dd06242f8c1f86e7290850aaff93a4aeb4d25ca42e6fddb7876e7b73a1a8",
+            "start_token": 860,
+            "end_token": 1007,
+            "segment_token_sha256": "142552db2ee1cf2a848750d9d33a8fe607e7f33d56c624bbd3ef3176e4c7129b",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:1ef758200de362bc72b1815dee50664fc9892f3eb1a4e8dce75f14a09b3094d1",
+            "chunk_id": "musique:chunk:756b633c1063fe239491e7e5b21b6c8a77449b865eb72f60fa8b99985c2e9549",
+            "chunk_version": "12021d0227481162c910cabbe5566b1374701ed81654ef5513c985bae0e3fb51",
+            "start_token": 1008,
+            "end_token": 1212,
+            "segment_token_sha256": "117b45f675c621d47599b835c06aa12f513254f98c9b39662953a48b1482e912",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_133154_40768",
+        "prompt_tokens": 1183,
+        "prompt_sha256": "a1691857776a967d797702d4d02b289fc5a8daf9ca56813d6ca591fda783b352",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:cb99d64d4c9e5c0fac59ff3d1c581d0edf924cbe4c7216dc95f05703076051f2",
+            "chunk_id": "musique:chunk:fa750b13e72056d78becdaa938eecb0a12fb448ae18b0110d5730762141dd9fb",
+            "chunk_version": "9eda3e7b763d973936faa1fbb08ff1cefdbe21cb81538780bae407c8396acb35",
+            "start_token": 11,
+            "end_token": 126,
+            "segment_token_sha256": "108a19e90eb1c399c051d78c01caf2b35d7fbf923f121d8d6fad3534cecb2513",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 127,
+            "end_token": 391,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 392,
+            "end_token": 545,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 546,
+            "end_token": 746,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:57e05be2894da1f79c828000f1968c08425a306d717b1a3dfd5d65d2b944c9e1",
+            "chunk_id": "musique:chunk:4b508beec412a0a12e39444d22f837d0e8436e63e8a1bdee8ac1c6ad9f723154",
+            "chunk_version": "834262ff001b9af207e36b3ac876daf058993d96fc93b5a6890a8a0b80b3982e",
+            "start_token": 747,
+            "end_token": 986,
+            "segment_token_sha256": "c2183649d947479a46e2d388ec553494b1ae2e92ad4fb6d2402c2cbc7f769887",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 987,
+            "end_token": 1150,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_133292_40768",
+        "prompt_tokens": 1030,
+        "prompt_sha256": "d15c6cbc737be2eb86f9dd3091f8e72dadb06fa46a89963f490cae1ec78c95ab",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 11,
+            "end_token": 174,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:db481610a70efdc72a98bbc2f9ee1326a1138247b979aa114ed5d65ef771f682",
+            "chunk_id": "musique:chunk:4d895691b80f1c1ad27e84edc96378dcdac1bab968a466edc1e9da4b9ffda006",
+            "chunk_version": "1ef276b0d6cfe4f597b916013f5fcc94557ff7441039280d2d858d1fd99286d3",
+            "start_token": 175,
+            "end_token": 318,
+            "segment_token_sha256": "fcae2115a4cc5ef143dd67b86f101dddaa3c47c5783545904992794eea91ee26",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:52a7e9fb512849c4b0d85084b120a1093111216e42f3ce970d19579f05f2789e",
+            "chunk_id": "musique:chunk:abfdc9b28d20259c9870fd825dd22b786a2f054ea14cfa7a19e019e9c2c2be14",
+            "chunk_version": "15fd10bfa0c82f85014b9db6efa097fb61c9924d092d79b68b5e5c0a7dc85e3e",
+            "start_token": 319,
+            "end_token": 506,
+            "segment_token_sha256": "f50ce422ea763fc87e834f36fc796453382785acabebde9972c2b5b5b78a0b7d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 507,
+            "end_token": 656,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 657,
+            "end_token": 866,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:c0cd8792063fbbf94b88b49e7c6c05c5ca50dcd7a035686eea02e3b409f40337",
+            "chunk_id": "musique:chunk:304ffed885949fe7c6183687be9224c8c41ffb46c126bdf137b3d4af3eb181d1",
+            "chunk_version": "c660793580f06918b36f001a85d4d1bc3bcaa6131d620ae52091ebfb630846ff",
+            "start_token": 867,
+            "end_token": 996,
+            "segment_token_sha256": "b6f4ed54118d89143f69ed4cdd27099a2ea83dcb31af7b5f97c20f51501519dc",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_222979_40768",
+        "prompt_tokens": 1205,
+        "prompt_sha256": "99309e5d7204d852aa7bf60bd627281634ece11797fc17b6c11ff2fe0bf3fa63",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 11,
+            "end_token": 174,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 175,
+            "end_token": 439,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 440,
+            "end_token": 649,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 650,
+            "end_token": 803,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 804,
+            "end_token": 953,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 954,
+            "end_token": 1178,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__133292_40769_64047",
+        "prompt_tokens": 1341,
+        "prompt_sha256": "d7223e763afe26b131a3f02fdf2083246e5c9e54abab9677d80849d33628e4ce",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:52a7e9fb512849c4b0d85084b120a1093111216e42f3ce970d19579f05f2789e",
+            "chunk_id": "musique:chunk:abfdc9b28d20259c9870fd825dd22b786a2f054ea14cfa7a19e019e9c2c2be14",
+            "chunk_version": "15fd10bfa0c82f85014b9db6efa097fb61c9924d092d79b68b5e5c0a7dc85e3e",
+            "start_token": 11,
+            "end_token": 198,
+            "segment_token_sha256": "f50ce422ea763fc87e834f36fc796453382785acabebde9972c2b5b5b78a0b7d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 199,
+            "end_token": 377,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 378,
+            "end_token": 555,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 556,
+            "end_token": 873,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 874,
+            "end_token": 1104,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 1105,
+            "end_token": 1311,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_132957_40768",
+        "prompt_tokens": 1190,
+        "prompt_sha256": "668e8b22f0f2bdd41aaabc21599001cbd5b175fcbfa72f43cf5d93c75b5272e9",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 221,
+            "end_token": 485,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 486,
+            "end_token": 639,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 640,
+            "end_token": 803,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 804,
+            "end_token": 982,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 983,
+            "end_token": 1160,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_52222_40768",
+        "prompt_tokens": 1153,
+        "prompt_sha256": "6309f645015992f8c999e284b993400ec6caed6fc3f760cac67b1279f57d5d04",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 221,
+            "end_token": 384,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 385,
+            "end_token": 563,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 564,
+            "end_token": 788,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 789,
+            "end_token": 966,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 967,
+            "end_token": 1121,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__483843_40769_64047",
+        "prompt_tokens": 1201,
+        "prompt_sha256": "9d04a8354d5ce0d8071f2f7bfcdd957a302e481d91967dd44c19876d1d368a90",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 189,
+            "end_token": 367,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 368,
+            "end_token": 632,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 633,
+            "end_token": 759,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 760,
+            "end_token": 960,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 961,
+            "end_token": 1167,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_800948_40768",
+        "prompt_tokens": 1174,
+        "prompt_sha256": "cf4657a4f4436c5947e06e3dc605479f4a0e1ddfe1a81721e1ebf9bd723cb1a4",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 221,
+            "end_token": 384,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 385,
+            "end_token": 563,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:db481610a70efdc72a98bbc2f9ee1326a1138247b979aa114ed5d65ef771f682",
+            "chunk_id": "musique:chunk:4d895691b80f1c1ad27e84edc96378dcdac1bab968a466edc1e9da4b9ffda006",
+            "chunk_version": "1ef276b0d6cfe4f597b916013f5fcc94557ff7441039280d2d858d1fd99286d3",
+            "start_token": 564,
+            "end_token": 707,
+            "segment_token_sha256": "fcae2115a4cc5ef143dd67b86f101dddaa3c47c5783545904992794eea91ee26",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 708,
+            "end_token": 932,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 933,
+            "end_token": 1139,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__593597_40769_64047",
+        "prompt_tokens": 1146,
+        "prompt_sha256": "4574bf3eb4c5986af9ebebe2852270b696b64d58eef76fdb72a71ed95ed0be62",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 11,
+            "end_token": 164,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 165,
+            "end_token": 429,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 430,
+            "end_token": 608,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 609,
+            "end_token": 786,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 787,
+            "end_token": 987,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 988,
+            "end_token": 1114,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_483843_40768",
+        "prompt_tokens": 1135,
+        "prompt_sha256": "e6f6ecd1aeaeaee004ff6d499216b168b7235feef733ddfc40ff19bf58ec43c8",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 221,
+            "end_token": 375,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 376,
+            "end_token": 553,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 554,
+            "end_token": 760,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 761,
+            "end_token": 939,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 940,
+            "end_token": 1103,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__222979_40769_64047",
+        "prompt_tokens": 1210,
+        "prompt_sha256": "920059ad79573c1fba113b7e5e35730ca3e5023a4ff036fe6bc0c2e47f29d0a3",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 11,
+            "end_token": 275,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 276,
+            "end_token": 476,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 477,
+            "end_token": 655,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 656,
+            "end_token": 833,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:edb5610d9370fa8fb4e0efb6638ebb4178193c835f51ec64c1807ad7879be251",
+            "chunk_id": "musique:chunk:15d551b8e12825d552db35cd1823e3ee1aa1f857d8235863b978eaef371fb79d",
+            "chunk_version": "ad0e5e56ce52a1df5b8cfbdc9705a6b0c9ab73478b0732f66aeab797919a3f5e",
+            "start_token": 834,
+            "end_token": 951,
+            "segment_token_sha256": "2103aa2f6bc6e571392efbd179a750703b56d576cf260fbed666fb2662bd5192",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 952,
+            "end_token": 1182,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_433432_40768",
+        "prompt_tokens": 1132,
+        "prompt_sha256": "287d29afb6ec84712dbc9a28b71fe33164347c3cc9845a8c2b440539502361ef",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 221,
+            "end_token": 398,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 399,
+            "end_token": 577,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 578,
+            "end_token": 732,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 733,
+            "end_token": 939,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 940,
+            "end_token": 1103,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_379231_40768",
+        "prompt_tokens": 1143,
+        "prompt_sha256": "b840af2d269ccfb10fda15259ed2fa5bd0fa3dabdb9f6ff6965340db7948448a",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 11,
+            "end_token": 211,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 212,
+            "end_token": 361,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 362,
+            "end_token": 571,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 572,
+            "end_token": 796,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 797,
+            "end_token": 960,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 961,
+            "end_token": 1114,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_132477_40768",
+        "prompt_tokens": 1174,
+        "prompt_sha256": "9cc72883834bc3d226bc0e582351b81467538319c6cf444da436cc453d1232f8",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 189,
+            "end_token": 453,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 454,
+            "end_token": 632,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 633,
+            "end_token": 786,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 787,
+            "end_token": 941,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 942,
+            "end_token": 1142,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_295815_40768",
+        "prompt_tokens": 1230,
+        "prompt_sha256": "fb0627b219646d85d8cab1be6efd9abe53734636f87569983d5d8325494bac0f",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 221,
+            "end_token": 451,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 452,
+            "end_token": 630,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 631,
+            "end_token": 794,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 795,
+            "end_token": 972,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 973,
+            "end_token": 1197,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_840908_40768",
+        "prompt_tokens": 1244,
+        "prompt_sha256": "80c0cc5edc7dd65b4d5771387be78794755fdd297fe1f4e3b2ec93c59a076746",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 11,
+            "end_token": 275,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 276,
+            "end_token": 429,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:95ba7e17490e71e497fd14a434a5713eb6e80f77cbd6dac56c02ec406270f582",
+            "chunk_id": "musique:chunk:c339740f89b95d95f59f710297745da4927b6b36ed1cdfe057ce1c1d04bf0ef6",
+            "chunk_version": "1b758238fbb0e690fd1bb73c5145b5b6980f0c49ea5f870b52a88e3dbec6fa99",
+            "start_token": 430,
+            "end_token": 619,
+            "segment_token_sha256": "9787691294e63a2385a73425015784d67f726998543b336a9f39b1b035cf650d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 620,
+            "end_token": 769,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:57e05be2894da1f79c828000f1968c08425a306d717b1a3dfd5d65d2b944c9e1",
+            "chunk_id": "musique:chunk:4b508beec412a0a12e39444d22f837d0e8436e63e8a1bdee8ac1c6ad9f723154",
+            "chunk_version": "834262ff001b9af207e36b3ac876daf058993d96fc93b5a6890a8a0b80b3982e",
+            "start_token": 770,
+            "end_token": 1009,
+            "segment_token_sha256": "c2183649d947479a46e2d388ec553494b1ae2e92ad4fb6d2402c2cbc7f769887",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:1ef758200de362bc72b1815dee50664fc9892f3eb1a4e8dce75f14a09b3094d1",
+            "chunk_id": "musique:chunk:756b633c1063fe239491e7e5b21b6c8a77449b865eb72f60fa8b99985c2e9549",
+            "chunk_version": "12021d0227481162c910cabbe5566b1374701ed81654ef5513c985bae0e3fb51",
+            "start_token": 1010,
+            "end_token": 1214,
+            "segment_token_sha256": "117b45f675c621d47599b835c06aa12f513254f98c9b39662953a48b1482e912",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__133264_40769_64047",
+        "prompt_tokens": 1147,
+        "prompt_sha256": "763d5677ad9b623bc8acc9c389a1b4f390a397ffcf22ac81def76805926401d8",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 11,
+            "end_token": 164,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 165,
+            "end_token": 343,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 344,
+            "end_token": 521,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 522,
+            "end_token": 786,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 787,
+            "end_token": 987,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 988,
+            "end_token": 1114,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_593597_40768",
+        "prompt_tokens": 1162,
+        "prompt_sha256": "7a6d9b60a6e159c79a3f11b7a35f54a294a5459bee68e96f3070ec0f62b174ef",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 11,
+            "end_token": 164,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 165,
+            "end_token": 374,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 375,
+            "end_token": 553,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 554,
+            "end_token": 717,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 718,
+            "end_token": 982,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 983,
+            "end_token": 1132,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__595371_40769_64047",
+        "prompt_tokens": 1108,
+        "prompt_sha256": "7a4ec886b439894fbb600867c839d0c4efc9ad3cd2d0d98083499e64a080848e",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 11,
+            "end_token": 211,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:edb5610d9370fa8fb4e0efb6638ebb4178193c835f51ec64c1807ad7879be251",
+            "chunk_id": "musique:chunk:15d551b8e12825d552db35cd1823e3ee1aa1f857d8235863b978eaef371fb79d",
+            "chunk_version": "ad0e5e56ce52a1df5b8cfbdc9705a6b0c9ab73478b0732f66aeab797919a3f5e",
+            "start_token": 212,
+            "end_token": 329,
+            "segment_token_sha256": "2103aa2f6bc6e571392efbd179a750703b56d576cf260fbed666fb2662bd5192",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 330,
+            "end_token": 594,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 595,
+            "end_token": 773,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 774,
+            "end_token": 951,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 952,
+            "end_token": 1078,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_380281_40768",
+        "prompt_tokens": 1319,
+        "prompt_sha256": "5943bcefd2434720722d46a04ceb869c4752ce85df8fd51deaf89b83efc4794f",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:1ef758200de362bc72b1815dee50664fc9892f3eb1a4e8dce75f14a09b3094d1",
+            "chunk_id": "musique:chunk:756b633c1063fe239491e7e5b21b6c8a77449b865eb72f60fa8b99985c2e9549",
+            "chunk_version": "12021d0227481162c910cabbe5566b1374701ed81654ef5513c985bae0e3fb51",
+            "start_token": 11,
+            "end_token": 215,
+            "segment_token_sha256": "117b45f675c621d47599b835c06aa12f513254f98c9b39662953a48b1482e912",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 216,
+            "end_token": 480,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:3d25b5aa4e368dc8d99b3faf8beea3c45cfc8f4a50be951c4d6bb581b9874dc2",
+            "chunk_id": "musique:chunk:94eef448bcf347b27fa32a523c2b5dd58d215b0272d53ec11ad14e607ff574ec",
+            "chunk_version": "b2fafca3bbc91bffb6b9441c755d60812a3353c5158d0479885e696f5c308de7",
+            "start_token": 481,
+            "end_token": 727,
+            "segment_token_sha256": "44766ea01e3ba09e62b1d446f9dfbe63cd7b407a558cbfb9e2bc048626596e10",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 728,
+            "end_token": 881,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 882,
+            "end_token": 1045,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:57e05be2894da1f79c828000f1968c08425a306d717b1a3dfd5d65d2b944c9e1",
+            "chunk_id": "musique:chunk:4b508beec412a0a12e39444d22f837d0e8436e63e8a1bdee8ac1c6ad9f723154",
+            "chunk_version": "834262ff001b9af207e36b3ac876daf058993d96fc93b5a6890a8a0b80b3982e",
+            "start_token": 1046,
+            "end_token": 1285,
+            "segment_token_sha256": "c2183649d947479a46e2d388ec553494b1ae2e92ad4fb6d2402c2cbc7f769887",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__132798_40769_64047",
+        "prompt_tokens": 1342,
+        "prompt_sha256": "b8290d5199570706e44ef6ae798c16afc5f9058ac00f48a7ba0c03f8bff1c1ca",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 11,
+            "end_token": 241,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 242,
+            "end_token": 420,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 421,
+            "end_token": 598,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 599,
+            "end_token": 916,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 917,
+            "end_token": 1043,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 1044,
+            "end_token": 1308,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__51933_40769_64047",
+        "prompt_tokens": 1254,
+        "prompt_sha256": "cbbd44806b6a26a64a92cc6bd6208515dc3c61ab77a2bb30754611d99fc66333",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 189,
+            "end_token": 367,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 368,
+            "end_token": 494,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 495,
+            "end_token": 812,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 813,
+            "end_token": 1019,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:449f458d5a406aaa8d3df2d087f68e161a51824e4a3ef721c4fe880d9b94052f",
+            "chunk_id": "musique:chunk:dbbd1214ffa6063531c1eee140844f8ade90f1d13895b2448f8ac26f11752332",
+            "chunk_version": "7cef0464b865646f2a3efd3bbb01e795f55c003fe68255950f4abebe7cf40c74",
+            "start_token": 1020,
+            "end_token": 1221,
+            "segment_token_sha256": "8d7c8141f3ab252e5e16fc213ab61a5971e3291f1220735bfbd26b753c270bc9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__295815_40769_64047",
+        "prompt_tokens": 1188,
+        "prompt_sha256": "ba7bc75d18b557458cd81911b5682dfeaacca1533cf5be25a4516bc2f5751589",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 11,
+            "end_token": 241,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 242,
+            "end_token": 420,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 421,
+            "end_token": 598,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 599,
+            "end_token": 725,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 726,
+            "end_token": 990,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 991,
+            "end_token": 1154,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__222979_132536_40768",
+        "prompt_tokens": 1119,
+        "prompt_sha256": "0cae37f8373160e9bfd214c7b66720fd93b93cc48fb9ed890cf9a3f81d7e08e1",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 11,
+            "end_token": 275,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 276,
+            "end_token": 476,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 477,
+            "end_token": 630,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 631,
+            "end_token": 794,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 795,
+            "end_token": 944,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:db481610a70efdc72a98bbc2f9ee1326a1138247b979aa114ed5d65ef771f682",
+            "chunk_id": "musique:chunk:4d895691b80f1c1ad27e84edc96378dcdac1bab968a466edc1e9da4b9ffda006",
+            "chunk_version": "1ef276b0d6cfe4f597b916013f5fcc94557ff7441039280d2d858d1fd99286d3",
+            "start_token": 945,
+            "end_token": 1088,
+            "segment_token_sha256": "fcae2115a4cc5ef143dd67b86f101dddaa3c47c5783545904992794eea91ee26",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_133264_40768",
+        "prompt_tokens": 1206,
+        "prompt_sha256": "d56b9b8ab8aeef3306fe24f3e00f9fdab3e8dc7e351755efe4e648f7d5e8d579",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 11,
+            "end_token": 164,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 165,
+            "end_token": 389,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 390,
+            "end_token": 599,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 600,
+            "end_token": 749,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 750,
+            "end_token": 913,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 914,
+            "end_token": 1178,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__76377_40769_64047",
+        "prompt_tokens": 1098,
+        "prompt_sha256": "34813329afffea00181da49ba5046f21a3dec005c87da71a10c58419b98a39e9",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 189,
+            "end_token": 367,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 368,
+            "end_token": 494,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 495,
+            "end_token": 701,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:449f458d5a406aaa8d3df2d087f68e161a51824e4a3ef721c4fe880d9b94052f",
+            "chunk_id": "musique:chunk:dbbd1214ffa6063531c1eee140844f8ade90f1d13895b2448f8ac26f11752332",
+            "chunk_version": "7cef0464b865646f2a3efd3bbb01e795f55c003fe68255950f4abebe7cf40c74",
+            "start_token": 702,
+            "end_token": 903,
+            "segment_token_sha256": "8d7c8141f3ab252e5e16fc213ab61a5971e3291f1220735bfbd26b753c270bc9",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 904,
+            "end_token": 1067,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_132968_40768",
+        "prompt_tokens": 1155,
+        "prompt_sha256": "0e69909baa2e098abdaa4c06f7feeb50b84fea7dd6471a7e38a32143a4cd9dc5",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:af214975a34ef51f2ca6371420beac3b9a5f9a1147fba72f103865896c4efeeb",
+            "chunk_id": "musique:chunk:15629ce8bf2e5e6a060e161aefbe1e0fa2d8517bd48dc307b12617981a67cf5a",
+            "chunk_version": "e67383f18a83eaba000d78f8979132506bff2ec7c4989e5eaac3ddf1b884f232",
+            "start_token": 221,
+            "end_token": 393,
+            "segment_token_sha256": "b06baf96a1d26a027ba93d1bccbcc026362eed298b4271ce8047e12c9ac4c476",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 394,
+            "end_token": 557,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 558,
+            "end_token": 736,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 737,
+            "end_token": 914,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 915,
+            "end_token": 1121,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_132967_40768",
+        "prompt_tokens": 1208,
+        "prompt_sha256": "15f869d4b98850d85521c193bc74001e9f962cde409c3d3895a25ca7dc88ab06",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 221,
+            "end_token": 384,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 385,
+            "end_token": 563,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 564,
+            "end_token": 770,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 771,
+            "end_token": 995,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 996,
+            "end_token": 1173,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_595371_40768",
+        "prompt_tokens": 1157,
+        "prompt_sha256": "29bff412cd2dc24a574b1dbad80b44509f92e268d3a9a351c13ad8cafb6bc2c6",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:edb5610d9370fa8fb4e0efb6638ebb4178193c835f51ec64c1807ad7879be251",
+            "chunk_id": "musique:chunk:15d551b8e12825d552db35cd1823e3ee1aa1f857d8235863b978eaef371fb79d",
+            "chunk_version": "ad0e5e56ce52a1df5b8cfbdc9705a6b0c9ab73478b0732f66aeab797919a3f5e",
+            "start_token": 221,
+            "end_token": 338,
+            "segment_token_sha256": "2103aa2f6bc6e571392efbd179a750703b56d576cf260fbed666fb2662bd5192",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:a1fe494343a944134b3ca0fc982e5a13f90a33f645ec4aebab977e1da47d1421",
+            "chunk_id": "musique:chunk:bfbb206619524e5d3a21c75a6e46eda6589cb12fde522828048a3b3bc1ec3bc8",
+            "chunk_version": "9a27b55b7503ecc50f8a552c33bae0da226b55e1ef4ecad695422365d95b6952",
+            "start_token": 339,
+            "end_token": 539,
+            "segment_token_sha256": "927d83d0b299fb9f467aaaf88469dfe4502a3eda007d353758314b52488a5064",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:5dca5de94fa1865ba64977f1329441339ade831671843d038010e97cb50dfe7a",
+            "chunk_id": "musique:chunk:73a40c14d0485bc96f57b9d326b8b47df18d8dd9f61c1867e099af9381bf3326",
+            "chunk_version": "9913f6f4cd71c779becd94f8ec721555a82d91a4a6a0c4867dd571dd08c9db6d",
+            "start_token": 540,
+            "end_token": 693,
+            "segment_token_sha256": "62596e41d3987229cb339e2c0ac26fad258b9c1f00079b6bdf436818779ac78f",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:8c98b5d62e605732e8e9194a6a7a8468c252a0d941d4e4d8a82e622e663c9ecf",
+            "chunk_id": "musique:chunk:7b56e02cc156ca3d90971fb71696fc1d621b84f1cf1a0261a4f8985c2445a045",
+            "chunk_version": "ecfaebd4822db0aa58099cbc15d2a1c122f1fd21ab35da71ea2a8d182e0059bc",
+            "start_token": 694,
+            "end_token": 958,
+            "segment_token_sha256": "f1e7d3b144953a0402827e956a5c1368b30fa5dd66484053408485cba49d4f75",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 959,
+            "end_token": 1122,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__52222_40769_64047",
+        "prompt_tokens": 1253,
+        "prompt_sha256": "6f9c2fac1a94fdb20162b639bd4b4551f38197868c5b30d0917a48a65cadd537",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 11,
+            "end_token": 188,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 189,
+            "end_token": 367,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 368,
+            "end_token": 494,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 495,
+            "end_token": 812,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 813,
+            "end_token": 1019,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:449f458d5a406aaa8d3df2d087f68e161a51824e4a3ef721c4fe880d9b94052f",
+            "chunk_id": "musique:chunk:dbbd1214ffa6063531c1eee140844f8ade90f1d13895b2448f8ac26f11752332",
+            "chunk_version": "7cef0464b865646f2a3efd3bbb01e795f55c003fe68255950f4abebe7cf40c74",
+            "start_token": 1020,
+            "end_token": 1221,
+            "segment_token_sha256": "8d7c8141f3ab252e5e16fc213ab61a5971e3291f1220735bfbd26b753c270bc9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__800948_40769_64047",
+        "prompt_tokens": 1218,
+        "prompt_sha256": "c6e36d35de8a2640679a2cb7a45cddeef7d7aa61a972494b05f8be0d4b374baf",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 11,
+            "end_token": 189,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 190,
+            "end_token": 367,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:d1277a8646f3b5577d1f374a03e099cadda5cdfd74c7caf222dfc51b6be54a43",
+            "chunk_id": "musique:chunk:7c8cde3e427ab053c6c18357a3d01c236c5c11fa6dcc6cde8522c5a20e3e2c02",
+            "chunk_version": "d26ea5e8ca0fe16e9ec0e6f3e647c6b85c500377301d7debf45a217da7655797",
+            "start_token": 368,
+            "end_token": 685,
+            "segment_token_sha256": "fbcbe9cd3c3310d0e8f2c2a722b836afdbd1390be9ab84fa164442ccaa23a8df",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 686,
+            "end_token": 849,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 850,
+            "end_token": 1056,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 1057,
+            "end_token": 1183,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_51933_40768",
+        "prompt_tokens": 1154,
+        "prompt_sha256": "176aa80144145fbd30ba1833bd88726c738476dbc7a851d7904a79889291a2e3",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 221,
+            "end_token": 384,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 385,
+            "end_token": 563,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 564,
+            "end_token": 788,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 789,
+            "end_token": 966,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 967,
+            "end_token": 1121,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop1__132968_40769_64047",
+        "prompt_tokens": 1073,
+        "prompt_sha256": "8383bb1bfe0ad307994121c9766dd55f37509cdb1171065a5b111ff02a165378",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:af214975a34ef51f2ca6371420beac3b9a5f9a1147fba72f103865896c4efeeb",
+            "chunk_id": "musique:chunk:15629ce8bf2e5e6a060e161aefbe1e0fa2d8517bd48dc307b12617981a67cf5a",
+            "chunk_version": "e67383f18a83eaba000d78f8979132506bff2ec7c4989e5eaac3ddf1b884f232",
+            "start_token": 11,
+            "end_token": 183,
+            "segment_token_sha256": "b06baf96a1d26a027ba93d1bccbcc026362eed298b4271ce8047e12c9ac4c476",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 184,
+            "end_token": 362,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 363,
+            "end_token": 540,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:93d5252b5ff63a934ffa66366b8eeb99bfa7f6cc53f8e4bc51c271a972095e58",
+            "chunk_id": "musique:chunk:2cc56cd5895a600f358dee07270798bda3686b212dd0ee7726787dab21a6a312",
+            "chunk_version": "3ea88f8e7dc4057ca878ce0cea97d68146d1370d76b99f97d4125ceb56811c0d",
+            "start_token": 541,
+            "end_token": 667,
+            "segment_token_sha256": "a33fdd3424afba83e2d4f6487e4d886108e1737fecd61aa708a3938d4ee32840",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:d17ac3e59fcb9e9185b062ed167d5c9f814d5b27ece5b50ded6972af80f78b85",
+            "chunk_id": "musique:chunk:f07177d51b7402e1d6980c0ed7a91072522f18122d264a6a4ae02833d2adc5cb",
+            "chunk_version": "14034e67e6bf35a97bccfae79b531fb45a3e264174ee35fb6bad8109f10da0a2",
+            "start_token": 668,
+            "end_token": 874,
+            "segment_token_sha256": "f71a1250d8f742f6267d1d2378db854b94ffc1d1efd81db342b6010db9c5208a",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 875,
+            "end_token": 1038,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_132798_40768",
+        "prompt_tokens": 1159,
+        "prompt_sha256": "7c5f42f2ba70f4c3ef725a37732b16bf4f4d34bcea208ec387da9f322d3e1084",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 221,
+            "end_token": 399,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:968fde461bb126532414f157046aa06fc47c2f068eb763fa6bd8dd6a96fe9cee",
+            "chunk_id": "musique:chunk:7bd73efb721f2ac1b137b7437b6373a2830acef287fa4185a3fa013937581cb1",
+            "chunk_version": "6c796dc4112b5bd2cac39e66da41bb2539655b74f3a7c4c0a54725f4947e0a8e",
+            "start_token": 400,
+            "end_token": 630,
+            "segment_token_sha256": "c6142d545648df9a1dbf3090db0109cf7c5b46b7b99871095ddad4ffa1240cb1",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 631,
+            "end_token": 808,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 809,
+            "end_token": 972,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:1e8cbcc4ccb99a43bbb35d86bdd002b3c9cc4fc2acb15ab2fd7d0fc1ae9f0a3f",
+            "chunk_id": "musique:chunk:29082959bb5f4aa6f44f3c67db89d04c4eae0d7f01893665badd2790bad92a52",
+            "chunk_version": "5d1075c9a46a2b6e571f2bf04e755143e2ddcfc45ae152bf81fc20cc5ff942f5",
+            "start_token": 973,
+            "end_token": 1127,
+            "segment_token_sha256": "97c18b03c142ce1f6c77680d3a163dde1b4f33dd583c23efa1361c207ff3fd91",
+            "rank": 6
+          }
+        ]
+      },
+      {
+        "request_key": "musique:3hop2__132957_76377_40768",
+        "prompt_tokens": 1144,
+        "prompt_sha256": "1930ac8fcb56a38292e3f612be5b624507ab8b9924e3b041db865bc544d38436",
+        "evidence": [
+          {
+            "doc_id": "musique:doc:a5f8b5ed5cf0d61e529671e2af7bad80da533fe9322fc3924fe98d62168b73a1",
+            "chunk_id": "musique:chunk:ff8322312f0135ab9861de4dc1bf111516c5eca9d27616cc43b52e77fe2258d2",
+            "chunk_version": "9927ddfb1cce138710737bed60a410d5169bc693420c5650a528c4216f0431c8",
+            "start_token": 11,
+            "end_token": 220,
+            "segment_token_sha256": "5868c79e3d3bde794c377f3349e628fb10bc72d6141ed3b8221612016ff60806",
+            "rank": 1
+          },
+          {
+            "doc_id": "musique:doc:690078365fc96e9c648dc106aabb28dcd787721b4ca6c4a105aeb2039bd1430a",
+            "chunk_id": "musique:chunk:35a14e7e7d4080eb062422936091317e47ffcb75287bdc3f1a7b3b9e6f8bddb4",
+            "chunk_version": "8cd0f21119a00deba08c53802785db26e753a1e07eb7b261f07e1f5d56bdcb26",
+            "start_token": 221,
+            "end_token": 445,
+            "segment_token_sha256": "4f3f2607bdba653fb904f686d52c72eff53f5624e79319a66636141da802c0a2",
+            "rank": 2
+          },
+          {
+            "doc_id": "musique:doc:f06c652dc88055bc6ba76f2f4d7720ed6e218350686141a46e12faa7f5851a67",
+            "chunk_id": "musique:chunk:b7b2352fc396425ccf57a9f7c733e583a44f2c0e9ab016938ff1308cca23c797",
+            "chunk_version": "93deba48d977575df26feaa0ee2507993419328ef520c7e50b0940d8d89a7c21",
+            "start_token": 446,
+            "end_token": 609,
+            "segment_token_sha256": "b110895860faca34f0257e9b680187d79fa789b7e08b8be27eca474a080816b9",
+            "rank": 3
+          },
+          {
+            "doc_id": "musique:doc:4d53623cd84357923ed64867846781c0e20e9546e9f47d5f013c7e821848960f",
+            "chunk_id": "musique:chunk:5038afa5f54c562ce648d8b4d79a3050a09e0b7adaf29689e129134e7be0fda1",
+            "chunk_version": "cfc8e94f86ca3957ffb5f3927d869f9cedb361df8eb0cad5df44b54c9ab8e667",
+            "start_token": 610,
+            "end_token": 788,
+            "segment_token_sha256": "212c3c358ba9947cd351548599033cfa25e563ff0e6c3fbfa38f4ced91c194a2",
+            "rank": 4
+          },
+          {
+            "doc_id": "musique:doc:07594c42729d872546db4c2f995517ec861cd58da04b946f0fd017ef6f08efaa",
+            "chunk_id": "musique:chunk:02d19d86083cba9fdd8b32c2318c527ed8a2e663f125a92294cb3b1a33d0c7f3",
+            "chunk_version": "0e5a3f12cfb7dc4de43799d02ceb28bcedb36e77907c8cd707b71358525ff3e1",
+            "start_token": 789,
+            "end_token": 938,
+            "segment_token_sha256": "431c014a1cdbcb189bf6dc75b15258ea4ba5881bfc7d19efbb037cc1dde33f8e",
+            "rank": 5
+          },
+          {
+            "doc_id": "musique:doc:28f0e81a4ed34d40f91ea04f8d9800eb81928b90e9990712dd8679d5da85ee89",
+            "chunk_id": "musique:chunk:28ec112e7553bb7b67ce490f00b2b4dfdd13e3c4d658191229debf365c47e54d",
+            "chunk_version": "b847bdae7707bb6b9cac4116a0b055e8dc9000a514031b9dd2b0d54778011098",
+            "start_token": 939,
+            "end_token": 1116,
+            "segment_token_sha256": "21d14d70f5bf9aa20ec750e12a9725d2fada0e706179e9071ef3dc452f56280d",
+            "rank": 6
+          }
+        ]
+      }
+    ],
+    "validation": {
+      "successful_source_receipts": 40,
+      "matching_ordered_evidence_in_campaign_layouts": [
+        "1p3d-native",
+        "1p3d-shared",
+        "2p2d-native",
+        "2p2d-shared"
+      ],
+      "archive_tokenizer_cross_check_requests": 10
+    }
+  }
+}
