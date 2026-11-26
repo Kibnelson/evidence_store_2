@@ -11,46 +11,7 @@ Each vLLM GPU block holds 16 tokens. LMCache stores complete 256-token objects, 
 
 In memory mode, LMCache keeps the objects in CPU memory. Both modes use the four GPUs for the model. In disk mode, LMCache writes to a local disk with `O_DIRECT`, releases the CPU-resident copy after the write, then reads it from disk for D. CPU buffers still stage the GPU transfers. The disk phase records the completed direct write and read for the matched objects. [vLLM hooks](../third_party/lifecycle/vllm.patch) · [LMCache hooks](../third_party/lifecycle/lmcache.patch)
 
-## 1. Package the local V2 sources on the Mac
-
-Use the lifecycle worktree and the three verified V2 source checkouts. This pilot uses the pristine `vllm` and `lmcache` pins `b24eda7` and `042d47a`, plus MT-RAG at `e0970de`. The package carries the local Git objects so the GPU build can verify every pin. Its source files come from the working tree, so review the current diff before packaging. The build can download pinned binary dependencies and model assets. [V2 source pins](../third_party/sources.json)
-
-```bash
-(
-  set -euo pipefail
-  umask 077
-  base=/Users/nelson/workspace/Research/Nutanix
-  lifecycle="$base/evidence_store_2_lifecycle"
-  v2="$base/evidence_store_2"
-  login=nbore@teach-node-09.cs.mcgill.ca
-
-  git -C "$lifecycle" status --short
-  python3 -B "$v2/scripts/checkout_sources.py" --verify vllm lmcache mt-rag
-
-  package="$(mktemp -d /tmp/es2-lifecycle-package.XXXXXX)"
-  COPYFILE_DISABLE=1 tar -czf "$package/lifecycle-source.tar.gz" \
-    -C "$lifecycle" scripts workloads third_party/sources.json third_party/lifecycle \
-    -C "$v2" third_party/checkouts/vllm third_party/checkouts/lmcache third_party/checkouts/mt-rag
-  cd "$package"
-  shasum -a 256 lifecycle-source.tar.gz > lifecycle-source.tar.gz.sha256
-
-  inbox="$(ssh "$login" '
-    set -eu
-    umask 077
-    node="/tmp/$(id -un)"
-    mkdir -p "$node"
-    test -O "$node"
-    test ! -L "$node"
-    mktemp -d "$node/es2-lifecycle-inbox.XXXXXX"
-  ')"
-  scp lifecycle-source.tar.gz lifecycle-source.tar.gz.sha256 "$login:$inbox/"
-  printf 'Mac package %s\nLogin inbox %s\n' "$package" "$inbox"
-)
-```
-
-Keep the printed login inbox path for the next steps.
-
-## 2. Start tmux and allocate four GPUs
+## 1. Start tmux and allocate four GPUs
 
 At the `teach-node-09` login shell, start a regular tmux session.
 
@@ -79,40 +40,45 @@ df -h /tmp
 
 Keep this window open for the build and runs. Detach with `Ctrl+b` then `d`, and reattach on the same login node with `tmux attach-session -t es2-lifecycle`.
 
-## 3. Relay the package to the allocation
+## 2. Clone V2 inside the allocation
 
-Open a second terminal on `teach-node-09`. Substitute the job ID from the GPU shell and the inbox path printed by the Mac. The relay uses a CPU-only step inside the existing allocation. It checks the archive before and after transfer, then extracts it on the GPU node.
+Run this at the `gpu-grad-01` prompt. It uses the GitHub SSH key from the earlier cluster runs and places the checkout on node-local scratch.
 
 ```bash
 (
   set -euo pipefail
-  module load slurm
-  job=REPLACE_WITH_JOB_ID
-  inbox=/tmp/nbore/REPLACE_WITH_PRINTED_INBOX_NAME
-  cd "$inbox"
-  sha256sum -c lifecycle-source.tar.gz.sha256
-  read -r digest _ < lifecycle-source.tar.gz.sha256
+  umask 077
+  : "${SLURM_JOB_ID:?Run in the four-GPU allocation}"
+  test "$(hostname -s)" = gpu-grad-01
+  root="/tmp/$(id -un)/es2-lifecycle-$SLURM_JOB_ID"
+  mkdir -p "$root"
+  df -h "$root"
 
-  srun --jobid="$job" --overlap --gres=none -N 1 -n 1 -c 1 bash -c '
-    set -euo pipefail
-    umask 077
-    root="/tmp/$(id -un)/es2-lifecycle-$SLURM_JOB_ID"
-    mkdir -p "$root"
-    test -O "$root"
-    test ! -L "$root"
-    if [[ -e "$root/source" ]]; then
-      printf "A source package already exists at %s/source\n" "$root" >&2
-      exit 1
-    fi
-    stage="$(mktemp -d "$root/.source.XXXXXX")"
-    archive="$(mktemp "$root/.incoming.XXXXXX")"
-    trap '\''rm -f -- "$archive"'\'' EXIT
-    cat > "$archive"
-    printf "%s  %s\n" "$1" "$archive" | sha256sum -c -
-    tar -xzf "$archive" -C "$stage"
-    mv -T -- "$stage" "$root/source"
-    printf "Source ready at %s/source\n" "$root"
-  ' lifecycle-relay "$digest" < lifecycle-source.tar.gz
+  if [[ ! -d "$root/source/.git" ]]; then
+    GIT_SSH_COMMAND='ssh -o BatchMode=yes' \
+      git clone --depth=1 --single-branch --no-tags --branch kv-block-lifecycle \
+      git@github.com:Kibnelson/evidence_store_2.git "$root/source"
+  fi
+  git -C "$root/source" log -1 --oneline
+)
+```
+
+## 3. Verify and copy the source pins
+
+The pilot uses pristine vLLM `b24eda7`, LMCache `042d47a`, and MT-RAG `e0970de`. The build uses the verified local Git copies. Set `EVIDENCESTORE_LIFECYCLE_DONORS` to the absolute checkout directory from an earlier cluster run if it contains the three pristine copies. The command defaults to the V1 checkout under your home directory and writes the new copies to scratch. If the three donors are absent, follow [Stage the local donors](#stage-the-local-donors-if-needed) once and return here. [V2 source pins](../third_party/sources.json)
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  : "${SLURM_JOB_ID:?Run in the four-GPU allocation}"
+  node="/tmp/$(id -un)"
+  cd "$node/es2-lifecycle-$SLURM_JOB_ID/source"
+  donors="${EVIDENCESTORE_LIFECYCLE_DONORS:-$HOME/evidence_store_1/third_party/checkouts}"
+  if [[ -z "${EVIDENCESTORE_LIFECYCLE_DONORS:-}" && -d "$node/es2-lifecycle-donors" ]]; then
+    donors="$node/es2-lifecycle-donors"
+  fi
+  python3 -B scripts/checkout_sources.py --from-checkouts "$donors" vllm lmcache mt-rag
 )
 ```
 
@@ -136,7 +102,7 @@ Return to the `gpu-grad-01` shell inside tmux. The runtime verifies the pristine
 )
 ```
 
-Preparation reads the pinned MT-RAG reference tasks and passage archive from the transferred checkout. It uses the saved retrieval ranks and verifies each passage identity and content hash. For an offline model cache, supply the pinned `tokenizer.json` with `--tokenizer-file /path/to/tokenizer.json`. Stage the model weights for the manifest's revision in the runtime's Hugging Face cache before starting the workers.
+Preparation reads the pinned MT-RAG reference tasks and passage archive from the verified local checkout. It uses the saved retrieval ranks and verifies each passage identity and content hash. For an offline model cache, supply the pinned `tokenizer.json` with `--tokenizer-file /path/to/tokenizer.json`. Stage the model weights for the manifest's revision in the runtime's Hugging Face cache before starting the workers.
 
 The conversation ID is `1534a095279f2cb888fb0bea17bd70da`. For example, if turn 1 retrieved A and B and turn 2 retrieves B and C, the second prompt contains these sections in this order.
 
@@ -269,3 +235,59 @@ From the Mac, substitute the login review directory printed with the digest and 
 ```
 
 Increase the workload after all four pilot phases pass. Freeze each additional conversation once, run both layouts in both tiers, and keep the four reports tied to that conversation's fixture.
+
+## Stage the local donors if needed
+
+Use this once when the cluster has no pristine copies at the pinned commits. The Git clone in step 2 supplies the lifecycle code. This transfer supplies the three verified third-party Git checkouts.
+
+On the Mac, use the existing V2 checkout to package the donors. The inbox is on the login node's scratch filesystem.
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  v2=/Users/nelson/workspace/Research/Nutanix/evidence_store_2
+  login=nbore@teach-node-09.cs.mcgill.ca
+  python3 -B "$v2/scripts/checkout_sources.py" --verify vllm lmcache mt-rag
+  package="$(mktemp -d /tmp/es2-lifecycle-donors.XXXXXX)"
+  cd "$package"
+  COPYFILE_DISABLE=1 tar -czf donors.tar.gz \
+    -C "$v2/third_party/checkouts" vllm lmcache mt-rag
+  shasum -a 256 donors.tar.gz > donors.tar.gz.sha256
+  inbox="$(ssh "$login" 'umask 077
+    node="/tmp/$(id -un)"
+    mkdir -p "$node" && mktemp -d "$node/es2-donor-inbox.XXXXXX"')"
+  scp donors.tar.gz donors.tar.gz.sha256 "$login:$inbox/"
+  printf 'Login inbox %s\n' "$inbox"
+)
+```
+
+From a second `teach-node-09` terminal, relay the verified archive into the active allocation. Substitute the job ID and the inbox path printed on the Mac.
+
+```bash
+(
+  set -euo pipefail
+  module load slurm
+  job=REPLACE_WITH_JOB_ID
+  inbox=/tmp/nbore/REPLACE_WITH_PRINTED_INBOX_NAME
+  cd "$inbox"
+  sha256sum -c donors.tar.gz.sha256
+  read -r digest _ < donors.tar.gz.sha256
+
+  srun --jobid="$job" --overlap --gres=none -N 1 -n 1 -c 1 bash -c '
+    set -euo pipefail
+    umask 077
+    node="/tmp/$(id -un)"
+    stage="$(mktemp -d "$node/.es2-donors.XXXXXX")"
+    archive="$(mktemp "$node/.es2-archive.XXXXXX")"
+    trap '''rm -f -- "$archive"''' EXIT
+    cat > "$archive"
+    printf "%s  %s\n" "$1" "$archive" | sha256sum -c -
+    tar -xzf "$archive" -C "$stage"
+    mv -T -- "$stage" "$node/es2-lifecycle-donors"
+    printf "Donors ready at %s/es2-lifecycle-donors\n" "$node"
+  ' donor-relay "$digest" < donors.tar.gz
+)
+```
+
+Return to step 3 in the GPU shell to verify and materialize the staged donors.
