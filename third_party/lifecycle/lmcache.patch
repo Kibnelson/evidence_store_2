@@ -1,0 +1,515 @@
+diff --git a/lmcache/v1/distributed/l1_manager/base.py b/lmcache/v1/distributed/l1_manager/base.py
+index beaf170..3541653 100644
+--- a/lmcache/v1/distributed/l1_manager/base.py
++++ b/lmcache/v1/distributed/l1_manager/base.py
+@@ -27,7 +27,10 @@ from lmcache.v1.distributed.internal_api import (
+     L1ObjectMeta,
+     L1OperationResult,
+ )
++from lmcache.v1.distributed.key_codec import encode_fs_filename
+ from lmcache.v1.distributed.memory_manager import L1MemoryManagerProtocol
++from lmcache.v1.lifecycle_trace import emit as lifecycle_emit
++from lmcache.v1.lifecycle_trace import enabled as lifecycle_enabled
+ from lmcache.v1.memory_management import MemoryObj
+ from lmcache.v1.mp_observability.event import Event, EventType
+ from lmcache.v1.mp_observability.event_bus import get_event_bus
+@@ -447,6 +450,9 @@ class BaseL1Manager(L1ManagerInterface):
+ 
+         freed_meta = [self._object_meta(obj) for obj in need_to_free]
+         self._memory_manager.free(need_to_free)
++        self._trace_l1(
++            "lmcache_l1_evicted", need_to_free_keys, freed_meta, "read_finished"
++        )
+ 
+         for listener in self._registered_listeners:
+             listener.on_l1_keys_read_finished(successful_keys)
+@@ -654,6 +660,9 @@ class BaseL1Manager(L1ManagerInterface):
+         self._memory_manager.free(discarded)
+ 
+         if notification_keys:
++            self._trace_l1(
++                "lmcache_l1_resident", notification_keys, notification_keys_meta, "store"
++            )
+             for listener in self._registered_listeners:
+                 listener.on_l1_keys_write_finished(notification_keys)
+             self._event_bus.publish(
+@@ -739,6 +748,9 @@ class BaseL1Manager(L1ManagerInterface):
+         self._memory_manager.free(discarded)
+         if resident_keys:
+             self._report_read_reserved(resident_keys)
++        self._trace_l1(
++            "lmcache_l1_resident", successful_keys, successful_keys_meta, "prefetch"
++        )
+ 
+         for listener in self._registered_listeners:
+             listener.on_l1_keys_finish_write_and_reserve_read(successful_keys)
+@@ -906,6 +918,7 @@ class BaseL1Manager(L1ManagerInterface):
+             all_meta = [self._object_meta(obj) for obj in all_memory_objs]
+             self._memory_manager.free(all_memory_objs)
+             self._objects.clear()
++            self._trace_l1("lmcache_l1_evicted", all_keys, all_meta, "clear")
+             for listener in self._registered_listeners:
+                 listener.on_l1_keys_deleted_by_manager(all_keys)
+             self._event_bus.publish(
+@@ -1268,6 +1281,7 @@ class BaseL1Manager(L1ManagerInterface):
+         the event bus."""
+         freed_meta = [self._object_meta(obj) for obj in objs]
+         self._memory_manager.free(objs)
++        self._trace_l1("lmcache_l1_evicted", keys, freed_meta, "l1_remove")
+ 
+         for listener in self._registered_listeners:
+             listener.on_l1_keys_deleted_by_manager(keys)
+@@ -1278,6 +1292,23 @@ class BaseL1Manager(L1ManagerInterface):
+             )
+         )
+ 
++    def _trace_l1(
++        self,
++        event: str,
++        keys: list[ObjectKey],
++        meta: list[L1ObjectMeta],
++        reason: str,
++    ) -> None:
++        if lifecycle_enabled():
++            for key, item in zip(keys, meta, strict=True):
++                lifecycle_emit(
++                    event,
++                    object_id=encode_fs_filename(key),
++                    bytes=item.size_bytes,
++                    l1_tag=self._config.tag,
++                    reason=reason,
++                )
++
+     def _object_meta(self, memory_obj: MemoryObj) -> L1ObjectMeta:
+         """Build the listener-facing metadata for one resident object."""
+         return L1ObjectMeta(size_bytes=memory_obj.get_size(), backend=self.backend_type)
+diff --git a/lmcache/v1/distributed/l2_adapters/fs_l2_adapter.py b/lmcache/v1/distributed/l2_adapters/fs_l2_adapter.py
+index 5802a46..24193bc 100644
+--- a/lmcache/v1/distributed/l2_adapters/fs_l2_adapter.py
++++ b/lmcache/v1/distributed/l2_adapters/fs_l2_adapter.py
+@@ -16,8 +16,10 @@ from typing import TYPE_CHECKING, Optional, Union
+ import asyncio
+ import ctypes
+ import errno
++import fcntl
+ import os
+ import threading
++import time
+ 
+ if TYPE_CHECKING:
+     # First Party
+@@ -53,6 +55,7 @@ from lmcache.v1.distributed.l2_adapters.config import (
+ from lmcache.v1.distributed.l2_adapters.factory import (
+     register_l2_adapter_factory,
+ )
++from lmcache.v1.lifecycle_trace import emit as lifecycle_emit
+ from lmcache.v1.platform import create_event_notifier
+ 
+ logger = init_logger(__name__)
+@@ -291,6 +294,11 @@ class FSL2Adapter(L2AdapterInterface):
+         # I/O tuning options aligned with FSConnector
+         self._read_ahead_size = config.read_ahead_size
+         self._use_odirect = config.use_odirect
++        self._strict_direct = os.environ.get("EVIDENCESTORE_LIFECYCLE_MODE") == "disk"
++        if self._strict_direct and not (
++            self._use_odirect and getattr(os, "O_DIRECT", 0)
++        ):
++            raise RuntimeError("The disk lifecycle requires filesystem O_DIRECT")
+         self._os_disk_bs = 0
+         # O_DIRECT fallbacks repeat for every object of a misaligned or
+         # refusing deployment, so each kind is logged once per adapter.
+@@ -653,6 +661,47 @@ class FSL2Adapter(L2AdapterInterface):
+         with open(file_path, "wb") as f:
+             f.write(buf)
+ 
++    def _strict_direct_io(
++        self,
++        file_path: Path,
++        buf: Union[bytearray, memoryview, bytes],
++        write: bool,
++    ) -> tuple[int, int, int]:
++        """Transfer one complete object with an O_DIRECT file descriptor."""
++        size = len(buf)
++        alignment = self._os_disk_bs
++        if (
++            size <= 0
++            or alignment <= 0
++            or size % alignment
++            or not _buffer_is_aligned(buf, alignment)
++        ):
++            raise OSError(errno.EINVAL, f"Unaligned direct I/O for {file_path.name}")
++
++        open_flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC if write else os.O_RDONLY
++        start_ns = time.monotonic_ns()
++        fd = os.open(file_path, open_flags | os.O_DIRECT, 0o644)
++        try:
++            fd_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
++            if not fd_flags & os.O_DIRECT:
++                raise OSError(errno.EIO, "The file descriptor dropped O_DIRECT")
++            if write:
++                _write_full(fd, buf)
++                transferred = size
++            else:
++                view = memoryview(buf).cast("B")
++                transferred = 0
++                while transferred < size:
++                    count = os.readv(fd, [view[transferred:]])
++                    if count == 0:
++                        raise OSError(
++                            errno.EIO, f"Short direct read for {file_path.name}"
++                        )
++                    transferred += count
++        finally:
++            os.close(fd)
++        return transferred, fd_flags, time.monotonic_ns() - start_ns
++
+     # ---- store ----------------------------------------------------------
+ 
+     async def _execute_store(
+@@ -676,7 +725,12 @@ class FSL2Adapter(L2AdapterInterface):
+                 size = len(buf)
+ 
+                 try:
+-                    if self._use_odirect:
++                    direct_result = None
++                    if self._strict_direct:
++                        direct_result = await self._loop.run_in_executor(
++                            None, self._strict_direct_io, tmp_path, buf, True
++                        )
++                    elif self._use_odirect:
+                         await self._loop.run_in_executor(
+                             None,
+                             self._write_with_odirect,
+@@ -688,6 +742,17 @@ class FSL2Adapter(L2AdapterInterface):
+                             await f.write(buf)
+ 
+                     await aiofiles.os.replace(tmp_path, file_path)
++                    if direct_result is not None:
++                        written, fd_flags, duration_ns = direct_result
++                        lifecycle_emit(
++                            "lmcache_disk_write_completed",
++                            object_id=file_path.name,
++                            bytes=written,
++                            duration_ns=duration_ns,
++                            direct=True,
++                            fd_flags=fd_flags,
++                            task_id=task_id,
++                        )
+                     bytes_written += size
+                     stored_keys.append(key)
+                     stored_sizes.append(size)
+@@ -696,7 +761,15 @@ class FSL2Adapter(L2AdapterInterface):
+                         file_path.name,
+                         size,
+                     )
+-                except Exception:
++                except Exception as exc:
++                    if self._strict_direct:
++                        lifecycle_emit(
++                            "lmcache_disk_io_failed",
++                            operation="write",
++                            object_id=file_path.name,
++                            error=str(exc),
++                            task_id=task_id,
++                        )
+                     logger.exception(
+                         "FSL2Adapter failed to store %s",
+                         file_path,
+@@ -751,6 +824,22 @@ class FSL2Adapter(L2AdapterInterface):
+                 expected = len(dst_buf)
+                 num_read: Optional[int] = None
+ 
++                if self._strict_direct:
++                    num_read, fd_flags, duration_ns = await self._loop.run_in_executor(
++                        None, self._strict_direct_io, file_path, dst_buf, False
++                    )
++                    lifecycle_emit(
++                        "lmcache_disk_read_completed",
++                        object_id=file_path.name,
++                        bytes=num_read,
++                        duration_ns=duration_ns,
++                        direct=True,
++                        fd_flags=fd_flags,
++                        task_id=task_id,
++                    )
++                    bitmap.set(i)
++                    continue
++
+                 # O_DIRECT path (sync, via executor)
+                 if self._use_odirect:
+                     num_read = await self._loop.run_in_executor(
+@@ -809,9 +898,17 @@ class FSL2Adapter(L2AdapterInterface):
+                         file_path.name,
+                         num_read,
+                     )
+-            except FileNotFoundError:
+-                continue
+-            except Exception:
++            except Exception as exc:
++                if self._strict_direct:
++                    lifecycle_emit(
++                        "lmcache_disk_io_failed",
++                        operation="read",
++                        object_id=file_path.name,
++                        error=str(exc),
++                        task_id=task_id,
++                    )
++                elif isinstance(exc, FileNotFoundError):
++                    continue
+                 logger.exception(
+                     "FSL2Adapter failed to load %s",
+                     file_path,
+diff --git a/lmcache/v1/lifecycle_trace.py b/lmcache/v1/lifecycle_trace.py
+new file mode 100644
+index 0000000..03b0f75
+--- /dev/null
++++ b/lmcache/v1/lifecycle_trace.py
+@@ -0,0 +1,18 @@
++# SPDX-License-Identifier: Apache-2.0
++"""Optional Evidence Store sink for the KV lifecycle checkout."""
++
++try:
++    import evidencestore_lifecycle as _sink
++except ModuleNotFoundError as exc:
++    if exc.name != "evidencestore_lifecycle":
++        raise
++    _sink = None
++
++
++def enabled() -> bool:
++    return _sink is not None and _sink.enabled()
++
++
++def emit(event: str, **data) -> None:
++    if _sink is not None:
++        _sink.emit(event, **data)
+diff --git a/lmcache/v1/multiprocess/modules/lmcache_driven_transfer.py b/lmcache/v1/multiprocess/modules/lmcache_driven_transfer.py
+index f2395aa..ffe8d30 100644
+--- a/lmcache/v1/multiprocess/modules/lmcache_driven_transfer.py
++++ b/lmcache/v1/multiprocess/modules/lmcache_driven_transfer.py
+@@ -4,6 +4,7 @@
+ # Standard
+ from dataclasses import dataclass
+ from typing import Any, Sequence
++import json
+ import threading
+ import time
+ 
+@@ -27,8 +28,11 @@ from lmcache.v1.distributed.api import (
+     ObjectKey,
+     ShardReplicationDesc,
+ )
++from lmcache.v1.distributed.key_codec import encode_fs_filename
+ from lmcache.v1.distributed.storage_manager import L1WriteCompletion, l1_owners_of
+ from lmcache.v1.kv_layer_groups import ObjectGroupInfo
++from lmcache.v1.lifecycle_trace import emit as lifecycle_emit
++from lmcache.v1.lifecycle_trace import enabled as lifecycle_enabled
+ from lmcache.v1.memory_management import MemoryObj
+ from lmcache.v1.mp_observability.event import Event, EventType, next_transfer_key
+ from lmcache.v1.multiprocess.engine_context import MPCacheServerContext
+@@ -254,6 +258,12 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+ 
+     def __init__(self, ctx: MPCacheServerContext, fd_socket_path: str = "") -> None:
+         self._ctx = ctx
++        self._trace_lifecycle = lifecycle_enabled()
++        if self._trace_lifecycle:
++            if not ctx.event_bus.enabled:
++                raise RuntimeError("The KV lifecycle requires the LMCache event bus")
++            ctx.event_bus.subscribe(EventType.MP_STORE_END, self._trace_transfer_end)
++            ctx.event_bus.subscribe(EventType.MP_RETRIEVE_END, self._trace_transfer_end)
+         self._cache_contexts: dict[int, ContextEntry] = {}
+         # Guards all reads/writes of _cache_contexts. The reaper mutates it
+         # off the MQ main loop, so register/unregister/store/retrieve and
+@@ -308,6 +318,90 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                 else:
+                     set_fd_resolver(self._fd_channel.take)
+ 
++    @staticmethod
++    def _trace_transfer_end(event: Event) -> None:
++        metadata = event.metadata
++        receipt = metadata.get("lifecycle_receipt")
++        if receipt is None:
++            return
++        name = (
++            "lmcache_store_completed"
++            if event.event_type == EventType.MP_STORE_END
++            else "lmcache_retrieve_completed"
++        )
++        lifecycle_emit(
++            name,
++            request_id=event.session_id,
++            transfer_key=metadata["transfer_key"],
++            engine_id=metadata["engine_id"],
++            device=metadata["device"],
++            bytes=metadata["total_bytes"],
++            completed_wall_ns=int(event.timestamp * 1_000_000_000),
++            **json.loads(receipt),
++        )
++
++    def _trace_transfer_metadata(
++        self,
++        cache_context: BaseCacheContext,
++        key: IPCCacheServerKey,
++        full_keys: list[list[ObjectKey]],
++        unfull_keys: list[ObjectKey],
++        full_block_ids: list[list[int]],
++        unfull_block_ids: list[list[int]],
++        object_sizes: dict[ObjectKey, int],
++        success: bool,
++        skip_first_n_tokens: int = 0,
++    ) -> dict[str, str]:
++        """Package mappings for the native stream callback's scalar metadata."""
++        chunk_size = self._ctx.chunk_size
++        full_chunk_count = len(full_keys[0])
++        blocks_per_chunk = [
++            len(blocks) // full_chunk_count if full_chunk_count else 0
++            for blocks in full_block_ids
++        ]
++        objects = []
++        for group_id, group in enumerate(
++            cache_context.kv_layer_groups_manager.object_groups
++        ):
++            keys = full_keys[group_id]
++            if unfull_keys:
++                keys = [*keys, unfull_keys[group_id]]
++            for chunk_index, obj_key in enumerate(keys):
++                if obj_key not in object_sizes:
++                    continue
++                token_start = key.start + chunk_index * chunk_size
++                block_ids_by_group = {}
++                for kernel_group in group.kernel_group_indices:
++                    n = blocks_per_chunk[kernel_group]
++                    start = chunk_index * n
++                    block_ids = (
++                        full_block_ids[kernel_group][start : start + n]
++                        if chunk_index < full_chunk_count
++                        else unfull_block_ids[kernel_group]
++                    )
++                    block_ids_by_group[str(kernel_group)] = block_ids
++                objects.append(
++                    {
++                        "object_id": encode_fs_filename(obj_key),
++                        "token_start": token_start,
++                        "token_end": min(token_start + chunk_size, key.end),
++                        "block_ids_by_group": block_ids_by_group,
++                        "bytes": object_sizes[obj_key],
++                    }
++                )
++        return {
++            "lifecycle_receipt": json.dumps(
++                {
++                    "success": success,
++                    "token_start": key.start,
++                    "token_end": key.end,
++                    "skip_first_n_tokens": skip_first_n_tokens,
++                    "objects": objects,
++                },
++                separators=(",", ":"),
++            ),
++        }
++
+     def _release_imported_event(self, payload: tuple[int, int]) -> None:
+         """Drop an imported worker event; the stream wait queued on it has run.
+ 
+@@ -919,6 +1013,20 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+             except Exception:
+                 logger.exception("Cannot store keys due to exception")
+             finally:
++                trace_metadata = {}
++                if self._trace_lifecycle:
++                    trace_metadata = self._trace_transfer_metadata(
++                        cache_context,
++                        key,
++                        obj_keys_per_obj_group,
++                        unfull_obj_keys,
++                        gpu_block_ids,
++                        unfull_block_ids,
++                        {obj_key: obj.get_size() for obj_key, obj in all_dict.items()}
++                        if store_succeeded
++                        else {},
++                        store_succeeded,
++                    )
+                 event_backend.record_event(event, cache_context.stream)
+                 # Fail closed: commit the reserved objects only when every chunk
+                 # copied successfully; otherwise the whole store is skipped.
+@@ -961,6 +1069,7 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                             "total_bytes": total_bytes,
+                             "num_tokens": num_tokens,
+                             "transfer_key": transfer_key,
++                            **trace_metadata,
+                         },
+                     ),
+                 )
+@@ -1225,6 +1334,9 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                 retained_keys, read_owners
+             )
+             total_bytes = 0
++            trace_sizes: dict[ObjectKey, int] | None = (
++                {} if self._trace_lifecycle else None
++            )
+             retrieve_succeeded = True
+             try:
+                 for obj_group_id in range(num_object_groups):
+@@ -1257,6 +1369,13 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                         block_ids_host=gpu_block_ids,
+                     )
+                     prefetched_keys.extend(in_window_keys)
++                    if trace_sizes is not None:
++                        trace_sizes.update(
++                            (obj_key, obj.get_size())
++                            for obj_key, obj in zip(
++                                in_window_keys, window_objs, strict=True
++                            )
++                        )
+                 if retrieve_succeeded and unfull_retained_keys:
+                     total_bytes += self._retrieve_unfull_chunk_objects(
+                         cache_context,
+@@ -1269,6 +1388,7 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                         ],
+                         unfull_block_ids,
+                         max(0, skip_first_n_tokens - num_chunks * self._ctx.chunk_size),
++                        trace_sizes=trace_sizes,
+                     )
+                     prefetched_keys.extend(unfull_retained_keys)
+             except Exception:
+@@ -1302,6 +1422,21 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                             "total_bytes": total_bytes,
+                             "num_tokens": num_tokens,
+                             "transfer_key": transfer_key,
++                            **(
++                                self._trace_transfer_metadata(
++                                    cache_context,
++                                    key,
++                                    obj_keys_per_obj_group,
++                                    unfull_obj_keys,
++                                    gpu_block_ids,
++                                    unfull_block_ids,
++                                    trace_sizes,
++                                    retrieve_succeeded,
++                                    skip_first_n_tokens,
++                                )
++                                if trace_sizes is not None
++                                else {}
++                            ),
+                         },
+                     ),
+                 )
+@@ -1474,6 +1609,8 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+         obj_group_ids: list[int],
+         block_ids: list[list[int]],
+         skip_first_n_tokens: int,
++        *,
++        trace_sizes: dict[ObjectKey, int] | None = None,
+     ) -> int:
+         """Copy an unfull chunk's read-locked objects into the GPU blocks.
+ 
+@@ -1529,4 +1666,9 @@ class LMCacheDrivenTransferModule(DiscoverableModule, InstanceLivenessTarget):
+                 object_buffer,
+                 lmcache_native.TransferDirection.H2D,
+             )
++        if trace_sizes is not None:
++            trace_sizes.update(
++                (obj_key, obj.get_size())
++                for obj_key, obj in zip(obj_keys, memory_objs, strict=True)
++            )
+         return sum(memory_obj.get_size() for memory_obj in memory_objs)

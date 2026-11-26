@@ -1,0 +1,447 @@
+diff --git a/vllm/v1/core/block_pool.py b/vllm/v1/core/block_pool.py
+index d012297..dfe9205 100644
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -4,6 +4,8 @@ import weakref
+ from collections.abc import Callable, Iterable, Sequence
+ from typing import Any
+ 
++from evidencestore_lifecycle import emit, enabled
++
+ from vllm.distributed.kv_events import (
+     MEDIUM_GPU,
+     AllBlocksCleared,
+@@ -139,6 +141,7 @@ class BlockPool:
+         assert isinstance(num_gpu_blocks, int) and num_gpu_blocks > 0
+         self.num_gpu_blocks = num_gpu_blocks
+         self.medium = medium
++        self._lifecycle_generations: dict[int, int] | None = {} if enabled() else None
+         self.enable_caching = enable_caching
+         self.hash_block_size = hash_block_size
+         self.num_hash_lookahead_tokens = num_hash_lookahead_tokens
+@@ -172,6 +175,15 @@ class BlockPool:
+         # are still being read until the pool reuses them.
+         self._reuse_watchers: dict[int, Callable[[KVCacheBlock], None]] = {}
+ 
++    def lifecycle_identity(self, block: KVCacheBlock) -> dict[str, int]:
++        generations = self._lifecycle_generations
++        assert generations is not None
++        return {
++            "pool_id": id(self),
++            "block_id": block.block_id,
++            "generation": generations[block.block_id],
++        }
++
+     def get_cached_block(
+         self, block_hash: BlockHash, kv_cache_group_ids: list[int]
+     ) -> list[KVCacheBlock] | None:
+@@ -274,6 +286,17 @@ class BlockPool:
+                 blk,
+                 num_tokens=num_hash_tokens,
+             )
++            if self._lifecycle_generations is not None:
++                emit(
++                    "vllm_gpu_block_cached",
++                    **self.lifecycle_identity(blk),
++                    request_id=request.request_id,
++                    group=kv_cache_group_id,
++                    token_start=num_hash_tokens - block_size,
++                    token_end=num_hash_tokens,
++                    block_hash=block_hash.hex(),
++                    partial=False,
++                )
+             if new_hashes is not None:
+                 new_hashes.append(maybe_convert_block_hash(block_hash))
+ 
+@@ -531,6 +554,17 @@ class BlockPool:
+             block,
+             num_tokens=num_hash_blocks * self.hash_block_size,
+         )
++        if self._lifecycle_generations is not None and not already_cached:
++            emit(
++                "vllm_gpu_block_cached",
++                **self.lifecycle_identity(block),
++                request_id=request.request_id,
++                group=kv_cache_group_id,
++                token_start=(num_tokens - 1) // block_size * block_size,
++                token_end=num_tokens,
++                block_hash=block_hash.hex(),
++                partial=True,
++            )
+         if self.enable_kv_cache_events and not already_cached:
+             parent_hash, block_start = self._get_partial_block_parent_hash_and_start(
+                 request, num_tokens
+@@ -702,7 +736,7 @@ class BlockPool:
+         if self.enable_caching:
+             if self.metrics_collector:
+                 for block in ret:
+-                    self._maybe_evict_cached_block(block)
++                    self._maybe_evict_cached_block(block, reason="capacity")
+                     assert block.ref_cnt == 0
+                     block.ref_cnt = 1
+                     self.metrics_collector.on_block_allocated(block)
+@@ -710,7 +744,7 @@ class BlockPool:
+                 for block in ret:
+                     # Most blocks were never cached, so skip the call when possible.
+                     if block.block_hash is not None:
+-                        self._maybe_evict_cached_block(block)
++                        self._maybe_evict_cached_block(block, reason="capacity")
+                     assert block.ref_cnt == 0
+                     block.ref_cnt = 1
+         else:
+@@ -719,6 +753,11 @@ class BlockPool:
+                 block.ref_cnt = 1
+                 if self.metrics_collector:
+                     self.metrics_collector.on_block_allocated(block)
++        generations = self._lifecycle_generations
++        if generations is not None:
++            for block in ret:
++                generations[block.block_id] = generations.get(block.block_id, 0) + 1
++                emit("vllm_gpu_block_allocated", **self.lifecycle_identity(block))
+         return ret
+ 
+     def _notify_reuse(self, blocks: Iterable[KVCacheBlock]) -> None:
+@@ -727,6 +766,15 @@ class BlockPool:
+             if watcher is not None:
+                 watcher(block)
+ 
++    def _emit_lifecycle_release(self, block: KVCacheBlock, reason: str) -> None:
++        emit(
++            "vllm_gpu_block_released",
++            **self.lifecycle_identity(block),
++            reason=reason,
++            ref_count=block.ref_cnt,
++            prefix_resident=block.block_hash is not None,
++        )
++
+     def unpin_blocks(
+         self,
+         blocks: Iterable[KVCacheBlock],
+@@ -743,12 +791,16 @@ class BlockPool:
+         for block in blocks:
+             assert block.ref_cnt > 0 and not block.is_null
+             block.ref_cnt -= 1
++            if self._lifecycle_generations is not None:
++                self._emit_lifecycle_release(block, "connector_unpin")
+             self._reuse_watchers[block.block_id] = on_reuse
+             if block.ref_cnt == 0:
+                 released.append(block)
+         self.free_block_queue.append_n(released)
+ 
+-    def _maybe_evict_cached_block(self, block: KVCacheBlock) -> bool:
++    def _maybe_evict_cached_block(
++        self, block: KVCacheBlock, reason: str = "invalidated"
++    ) -> bool:
+         """If a block is cached in `cached_block_hash_to_block`, we reset its hash
+         metadata and evict it from the cache.
+ 
+@@ -768,9 +820,24 @@ class BlockPool:
+             # The block doesn't have hash, eviction is not needed
+             return False
+ 
++        if self._lifecycle_generations is not None:
++            self._emit_lifecycle_eviction(block, evicted_hashes, reason)
+         self._emit_block_removed_events(evicted_hashes)
+         return True
+ 
++    def _emit_lifecycle_eviction(
++        self,
++        block: KVCacheBlock,
++        hashes: list[BlockHashWithGroupId],
++        reason: str,
++    ) -> None:
++        emit(
++            "vllm_gpu_block_evicted",
++            **self.lifecycle_identity(block),
++            reason=reason,
++            block_hashes=sorted(get_block_hash(h).hex() for h in hashes),
++        )
++
+     def touch(self, blocks: Sequence[KVCacheBlock]) -> None:
+         """Touch a block increases its reference count by 1, and may remove
+         the block from the free queue. This is used when a block is hit by
+@@ -822,6 +889,8 @@ class BlockPool:
+                     other_pools.setdefault(pool, []).append(block)
+                 continue
+             block.ref_cnt -= 1
++            if self._lifecycle_generations is not None:
++                self._emit_lifecycle_release(block, "reference_release")
+             if block.ref_cnt == 0:
+                 if block.block_hash is None or not self.enable_caching or evict_first:
+                     # LIFO reuse of non-cached blocks for better GPU locality,
+@@ -875,10 +944,21 @@ class BlockPool:
+                 "blocks (%d) are not freed yet",
+                 num_used_blocks - 1,
+             )
++            if self._lifecycle_generations is not None:
++                emit("vllm_prefix_cache_reset", pool_id=id(self), success=False)
+             return False
+ 
+         # Remove all hashes so that no new blocks will hit. Clear in place: a
+         # new map created after the startup gc.freeze() would not be frozen.
++        if self._lifecycle_generations is not None:
++            for block in self.blocks:
++                if block.block_hash is None:
++                    continue
++                hashes = [
++                    block.block_hash,
++                    *self.cached_block_hashes_by_block.get(block.block_id, ()),
++                ]
++                self._emit_lifecycle_eviction(block, hashes, "reset")
+         self.cached_block_hash_to_block.clear()
+         self.cached_block_hashes_by_block.clear()
+         if self._reuse_watchers:
+@@ -894,6 +974,8 @@ class BlockPool:
+             self.metrics_collector.reset()
+ 
+         logger.info("Successfully reset prefix cache")
++        if self._lifecycle_generations is not None:
++            emit("vllm_prefix_cache_reset", pool_id=id(self), success=True)
+ 
+         if self.enable_kv_cache_events:
+             self.kv_event_queue.append(AllBlocksCleared())
+diff --git a/vllm/v1/core/sched/output.py b/vllm/v1/core/sched/output.py
+index 21f2eb6..1d109a7 100644
+--- a/vllm/v1/core/sched/output.py
++++ b/vllm/v1/core/sched/output.py
+@@ -329,6 +329,9 @@ class SchedulerOutput:
+     # drafter can skip proposing them.
+     skip_drafts: bool = False
+ 
++    # Trace-only join key for the scheduler plan and fenced model-worker writes.
++    lifecycle_step: int | None = None
++
+     @classmethod
+     def make_empty(cls) -> "SchedulerOutput":
+         return cls(
+diff --git a/vllm/v1/core/sched/scheduler.py b/vllm/v1/core/sched/scheduler.py
+index c8be8a3..94c1f3c 100644
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -7,6 +7,8 @@ from collections.abc import Iterable
+ from dataclasses import replace
+ from typing import Any
+ 
++from evidencestore_lifecycle import emit, enabled
++
+ from vllm.compilation.cuda_graph import CUDAGraphStat
+ from vllm.config import KVEventsConfig, VllmConfig
+ from vllm.distributed.aux_output_connector.connector import (
+@@ -451,6 +453,7 @@ class Scheduler(SchedulerInterface):
+         # Counts of non-empty steps scheduled / processed. update_from_output
+         # is called once per scheduled step in FIFO order, so these stay in sync.
+         self.sched_step_seq = 0
++        self._lifecycle_step = 0
+         self.processed_step_seq = 0
+         # FIFO of (fence_seq, blocks): blocks become safe to free once
+         # processed_step_seq >= fence_seq.
+@@ -656,6 +659,22 @@ class Scheduler(SchedulerInterface):
+         end = min((s for s in stops if start < s < end), default=end)
+         return max(end - start, 0)
+ 
++    def _lifecycle_block_groups(
++        self, blocks: KVCacheBlocks
++    ) -> list[list[dict[str, int] | None]]:
++        groups = []
++        for group in blocks.blocks:
++            identities = []
++            for block in group:
++                if block.is_null:
++                    identities.append(None)
++                    continue
++                pool = block.pool() if block.pool is not None else None
++                assert pool is not None
++                identities.append(pool.lifecycle_identity(block))
++            groups.append(identities)
++        return groups
++
+     def _get_local_prefix_cache_hit(
+         self, request: Request, max_cache_hit_length: int | None = None
+     ) -> tuple[KVCacheBlocks, int, int, bool]:
+@@ -1264,6 +1283,17 @@ class Scheduler(SchedulerInterface):
+                         skip_request(request_queue)
+                         continue
+ 
++                    if enabled():
++                        emit(
++                            "vllm_prefix_lookup",
++                            request_id=request.request_id,
++                            local_tokens=num_new_local_computed_tokens,
++                            external_tokens=num_external_computed_tokens,
++                            async_load=load_kv_async,
++                            local_blocks=self._lifecycle_block_groups(
++                                new_computed_blocks
++                            ),
++                        )
+                     # Track first scheduled prefill, not post-preemption repeat prefills
+                     if request.prefill_stats and request.num_preemptions <= 0:
+                         assert num_computed_tokens <= request.num_prompt_tokens
+@@ -1506,6 +1536,19 @@ class Scheduler(SchedulerInterface):
+                         self.encoder_cache_manager.free(request)
+                     break
+ 
++                if enabled():
++                    emit(
++                        "vllm_kv_slots_allocated",
++                        request_id=request_id,
++                        local_tokens=num_new_local_computed_tokens,
++                        external_tokens=num_external_computed_tokens,
++                        async_load=load_kv_async,
++                        new_blocks=self._lifecycle_block_groups(new_blocks),
++                        blocks=self._lifecycle_block_groups(
++                            self.kv_cache_manager.get_blocks(request_id)
++                        ),
++                    )
++
+                 # KVTransfer: the connector uses this info to determine
+                 # if a load is needed. Note that
+                 # This information is used to determine if a load is
+@@ -1795,6 +1838,20 @@ class Scheduler(SchedulerInterface):
+             )
+             scheduler_output.ec_connector_metadata = ec_meta
+ 
++        if enabled() and num_scheduled_tokens:
++            self._lifecycle_step += 1
++            scheduler_output.lifecycle_step = self._lifecycle_step
++            for request_id, scheduled_tokens in num_scheduled_tokens.items():
++                emit(
++                    "vllm_gpu_work_planned",
++                    request_id=request_id,
++                    step=self._lifecycle_step,
++                    scheduled_tokens=scheduled_tokens,
++                    blocks=self._lifecycle_block_groups(
++                        self.kv_cache_manager.get_blocks(request_id)
++                    ),
++                )
++
+         # Connector-only block state must not be dispatched to workers.
+         scheduler_output.kv_connector_block_state = None
+ 
+@@ -3022,6 +3079,12 @@ class Scheduler(SchedulerInterface):
+ 
+     def add_request(self, request: Request) -> None:
+         existing = self.requests.get(request.request_id)
++        if enabled() and existing is None:
++            emit(
++                "vllm_request_arrived",
++                request_id=request.request_id,
++                prompt_tokens=request.num_prompt_tokens,
++            )
+         if existing is not None:
+             update = StreamingUpdate.from_request(request)
+             if existing.status != RequestStatus.WAITING_FOR_STREAMING_REQ:
+@@ -3183,7 +3246,17 @@ class Scheduler(SchedulerInterface):
+         """Free the request's KV blocks, deferring the return to the block
+         pool when an in-flight GPU step may still write them.
+         """
+-        if self._request_blocks_can_be_freed(request):
++        can_free = self._request_blocks_can_be_freed(request)
++        if enabled():
++            emit(
++                "vllm_request_blocks_release",
++                request_id=request.request_id,
++                deferred=not can_free,
++                blocks=self._lifecycle_block_groups(
++                    self.kv_cache_manager.get_blocks(request.request_id)
++                ),
++            )
++        if can_free:
+             self.kv_cache_manager.free(request)
+             return
+         blocks = self.kv_cache_manager.pop_blocks_for_free(request)
+@@ -3584,6 +3657,16 @@ class Scheduler(SchedulerInterface):
+         assert self.connector is not None
+ 
+         load_failed = request.request_id in self.failed_recving_kv_req_ids
++        if enabled():
++            emit(
++                "vllm_external_kv_ready",
++                request_id=request.request_id,
++                success=not load_failed,
++                computed_tokens=request.num_computed_tokens,
++                blocks=self._lifecycle_block_groups(
++                    self.kv_cache_manager.get_blocks(request.request_id)
++                ),
++            )
+         if load_failed:
+             # Request had KV load failures; num_computed_tokens was already
+             # updated in _update_requests_with_invalid_blocks
+diff --git a/vllm/v1/worker/gpu/lifecycle.py b/vllm/v1/worker/gpu/lifecycle.py
+new file mode 100644
+index 0000000..e3f98e5
+--- /dev/null
++++ b/vllm/v1/worker/gpu/lifecycle.py
+@@ -0,0 +1,45 @@
++# SPDX-License-Identifier: Apache-2.0
++from itertools import groupby
++
++import torch
++from evidencestore_lifecycle import emit
++
++from vllm.v1.worker.gpu.input_batch import InputBatch
++
++
++def emit_kv_writes(
++    step: int,
++    batch: InputBatch,
++    slot_mappings: torch.Tensor,
++    block_sizes: list[int],
++) -> None:
++    # This experiment fences the model stream before using a write receipt.
++    # Token spans come from the exact slot map submitted to attention.
++    torch.cuda.current_stream(slot_mappings.device).synchronize()
++    slots_by_group = slot_mappings[:, : batch.num_tokens].cpu().tolist()
++    positions = batch.positions[: batch.num_tokens].cpu().tolist()
++    for group, (slots, block_size) in enumerate(zip(slots_by_group, block_sizes)):
++        for request_index, request_id in enumerate(batch.req_ids):
++            lo, hi = batch.query_start_loc_np[request_index : request_index + 2]
++            for (block_id, _), span in groupby(
++                enumerate(slots[lo:hi], start=int(lo)),
++                key=lambda item: (item[1] // block_size, item[1] - item[0]),
++            ):
++                if block_id <= 0:
++                    continue
++                start, slot_start = next(span)
++                end, slot_end = start, slot_start
++                for end, slot_end in span:
++                    pass
++                emit(
++                    "vllm_gpu_kv_written",
++                    step=step,
++                    request_id=request_id,
++                    group=group,
++                    block_id=block_id,
++                    block_size=block_size,
++                    token_start=positions[start],
++                    token_end=positions[end] + 1,
++                    slot_start=slot_start,
++                    slot_end=slot_end + 1,
++                )
+diff --git a/vllm/v1/worker/gpu/model_runner.py b/vllm/v1/worker/gpu/model_runner.py
+index 9c3f855..8c7ca52 100644
+--- a/vllm/v1/worker/gpu/model_runner.py
++++ b/vllm/v1/worker/gpu/model_runner.py
+@@ -146,6 +146,7 @@ from vllm.v1.worker.gpu.kv_connector import (
+     KVConnector,
+     get_kv_connector,
+ )
++from vllm.v1.worker.gpu.lifecycle import emit_kv_writes
+ from vllm.v1.worker.gpu.lora_utils import (
+     LoraState,
+     create_lora_capture_hook,
+@@ -2203,6 +2204,15 @@ class GPUModelRunner(LoRAModelRunnerMixin):
+ 
+         self.kv_connector.finish_forward()
+ 
++        if not dummy_run and scheduler_output.lifecycle_step is not None:
++            assert slot_mappings is not None
++            emit_kv_writes(
++                scheduler_output.lifecycle_step,
++                input_batch,
++                slot_mappings,
++                self.block_tables.block_sizes,
++            )
++
+         if self.is_last_pp_rank:
+             if self.use_aux_hidden_state_outputs:
+                 if self.pp_handler is not None:

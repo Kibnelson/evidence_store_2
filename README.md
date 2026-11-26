@@ -32,3 +32,7 @@ python3 -B scripts/prepare_full_blend.py --verify
 ## Workload inputs
 
 `workloads/` contains the original MT-RAG and MuSiQue selections and the four CLAPNQ files for the carry-forward checkpoints. All six are byte-for-byte copies from V1 experiment commit `5fc1c4b`. They record the selected queries, conversations, and retrieval provenance. Workload execution uses prepared inputs and an index that match the recorded pins.
+
+## KV block lifecycle pilot
+
+The [runbook](docs/kv-block-lifecycle-runbook.md) runs one five-turn MT-RAG conversation in 1P/3D normal prefix mode. It pairs CPU memory and direct disk LMCache runs under both current-docs and carry-forward prompt layouts.
