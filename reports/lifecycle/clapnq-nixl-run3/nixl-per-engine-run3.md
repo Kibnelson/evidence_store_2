@@ -191,6 +191,8 @@ For example, carry-forward turn 4 in conversation 01 had 2,660 tokens, which use
 
 ## Follow one block in disk carry-forward
 
+[Open the five-turn browser view](residency-timeline-turns-1-5.html) to see each turn's prompt and follow its blocks on GPU, in LMCache CPU memory, and on disk. Download the HTML and open it locally to use the controls.
+
 [Open the prompt-first view](prompt-timeline-turn4-per-engine.md) to see the exact prompt, token IDs, all 167 numbered blocks, and their GPU and LMCache events.
 
 On conversation 01, turn 4, D0 reused 688 prompt tokens from the 43 GPU blocks it kept after turn 1. Logical block 43 was the first NIXL pull because its final two token positions differed from the block D0 had cached. [Origin of D0's GPU reuse](prompt-timeline-turn4-per-engine.md#origin-of-d0-gpu-reuse-on-turn-4)

@@ -191,6 +191,8 @@ For example, carry-forward turn 4 in conversation 01 had 2,660 tokens, which use
 
 ## Follow one block in disk carry-forward
 
+[Open the five-turn browser view](residency-timeline-turns-1-5.html) to see each turn's prompt and follow its blocks on GPU, in LMCache CPU memory, and on disk. Download the HTML and open it locally to use the controls.
+
 [Open the prompt-first view](prompt-timeline-turn4-shared.md) to see the exact prompt, token IDs, all 167 numbered blocks, and their GPU and LMCache events.
 
 Conversation 01, turn 4. Logical block 43 falls immediately after D0's local prefix. The events below follow the P GPU slot, the NIXL handoff into D0's GPU slot, and related LMCache object events.
