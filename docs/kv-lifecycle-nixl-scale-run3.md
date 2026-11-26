@@ -170,6 +170,18 @@ After Step 4, run this block in the allocation to test read-back before expandin
 
 Use `--movement-csv` in place of `--turn 4 --block 43` to export a verified phase's block rows. The aggregate reports can include a conversation with P-side LMCache restores. That case retains all raw evidence, and the existing detailed block reader's original model-write assumptions can limit a full slot timeline for that arm.
 
+### Follow a complete prompt
+
+The prompt-first viewer shows every token ID and logical block for a turn, the corresponding P and D GPU slots, and links to the LMCache objects that cover those positions. Each object has its own event list for P and D copies, CPU placement and release, and disk operations. Run the command from the V2 repository with `extracted` set to the unpacked trace bundle. Supply the verified replication ZIP with `--prompt-archive` to display the exact rendered prompt text.
+
+```bash
+python3 -B scripts/lifecycle_prompt_timeline.py "$extracted/disk-carry_forward" \
+  --mode disk --layout carry_forward --topology shared_engine --turn 4 \
+  > prompt-timeline.md
+```
+
+View the same turn with `--topology per_engine` to see D copy some of the same prompt positions into its own LMCache server. The two views use the same recorded prompt.
+
 ## 6. Expand to 5 and 10
 
 After the first report is published, run this with `through=5`. Use `through=10` to continue directly through both remaining checkpoints. The runner reads and verifies the published prefix before capturing any remaining conversations.
