@@ -182,6 +182,17 @@ python3 -B scripts/lifecycle_prompt_timeline.py "$extracted/disk-carry_forward" 
 
 View the same turn with `--topology per_engine` to see D copy some of the same prompt positions into its own LMCache server. The two views use the same recorded prompt.
 
+### Explore GPU, CPU, and disk residence across turns
+
+Generate an offline browser view from an extracted conversation. The same page opens both topologies. Select a turn and an LMCache object or logical block to see its GPU slots and copies across the conversation. Use the time cursor to count observed copies. Select a bar or NIXL arrow to open its raw receipts. Provide the verified replication ZIP to display the exact prompt text.
+
+```bash
+python3 -B scripts/lifecycle_residency_view.py "$extracted/disk-carry_forward" \
+  --prompt-archive "$prompt_zip" --output residency-timeline.html
+```
+
+Open `residency-timeline.html` in a browser. The time axis uses the first P arrival in the selected topology as zero. A NIXL arrow uses the recorded dispatch and batch-ready times. Disk stripes begin at completed writes and extend to the end of the capture when no deletion event is available. [Prebuilt five-turn view](https://github.com/Kibnelson/evidence_store_2/blob/results/lifecycle-clapnq-nixl-run3/reports/lifecycle/clapnq-nixl-run3/residency-timeline-turns-1-5.html)
+
 ## 6. Expand to 5 and 10
 
 After the first report is published, run this with `through=5`. Use `through=10` to continue directly through both remaining checkpoints. The runner reads and verifies the published prefix before capturing any remaining conversations.

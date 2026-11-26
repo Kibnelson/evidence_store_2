@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KV lifecycle trace</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f5f7fb;
+    --surface: #fff;
+    --ink: #162638;
+    --subtle: #4e6074;
+    --line: #dbe3ed;
+    --navy: #152e49;
+    --prefill: #2165a6;
+    --decode0: #7145a1;
+    --decode1: #087a73;
+    --decode2: #b74b41;
+    --shared: #50627a;
+    --nixl: #aa4a15;
+    --label-width: 11rem;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); }
+  .shell { width: min(100% - 2rem, 93rem); margin: auto; }
+  header { padding: 1.6rem 0 1.45rem; background: var(--navy); color: white; }
+  header p { margin: .45rem 0 0; color: #d3e1ef; overflow-wrap: anywhere; }
+  h1 { margin: 0; font-size: clamp(1.65rem, 3vw, 2.3rem); font-weight: 720; letter-spacing: -.035em; }
+  h2 { margin: 0; font-size: 1.06rem; font-weight: 700; }
+  p { line-height: 1.48; }
+  main { padding: 1rem 0 2rem; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: .75rem 1rem; padding: .85rem 1rem; margin-bottom: .85rem; }
+  label { display: grid; gap: .32rem; align-content: start; color: var(--subtle); font-size: .78rem; font-weight: 650; }
+  select { max-width: 100%; color: var(--ink); background: #fff; border: 1px solid #aebed1; border-radius: .38rem; padding: .4rem .55rem; font: inherit; font-size: .88rem; }
+  input, button, summary { font: inherit; }
+  button { color: inherit; }
+  :focus-visible { outline: 2px solid var(--prefill); outline-offset: 2px; }
+  input[type=range] { accent-color: var(--prefill); margin: 0; width: 100%; }
+  [hidden] { display: none !important; }
+  .readout { color: var(--subtle); font-size: .85rem; margin: .35rem 0 0; }
+  .timeline-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .65rem 1rem; padding: .9rem 1rem .75rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: .52rem .78rem; align-items: center; font-size: .76rem; color: var(--subtle); }
+  .legend span { display: inline-flex; align-items: center; gap: .32rem; }
+  .key { display: inline-block; width: .85rem; height: .66rem; border-radius: .16rem; background: var(--actor-color); }
+  .key.tier-key { --actor-color: var(--shared); }
+  .slider-row { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(6.5rem, 11rem); gap: .9rem 1.25rem; padding: 0 1rem .85rem; }
+  .slider-row label { grid-template-columns: 1fr auto; gap: .38rem .7rem; align-items: center; }
+  .slider-row input { grid-column: 1 / -1; }
+  output { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .chart-scroll { overflow: auto; border-block: 1px solid var(--line); scrollbar-color: #9aacc1 #f1f5fa; }
+  .chart { min-width: calc(var(--label-width) + 31rem); }
+  .chart-row { display: grid; grid-template-columns: var(--label-width) minmax(0, 1fr); min-height: 2.55rem; }
+  .chart-row + .chart-row { border-top: 1px solid #ebeff5; }
+  .row-name { position: sticky; left: 0; z-index: 4; align-content: center; padding: .4rem .68rem; background: #f9fbfd; border-right: 1px solid var(--line); font-size: .76rem; font-weight: 670; }
+  .row-name button { display: block; width: 100%; padding: .28rem .32rem; border: 0; border-radius: .27rem; background: transparent; text-align: left; cursor: pointer; }
+  .row-name button[aria-pressed=true] { background: #e8f0fb; color: #143a67; }
+  .row-name small { display: block; margin-top: .2rem; color: var(--subtle); font-size: .7rem; font-weight: 450; }
+  .track { position: relative; min-width: 0; margin-inline: 1.45rem; }
+  .axis .track { min-height: 3rem; }
+  .axis .row-name { line-height: 1.3; }
+  .axis .track::after { content: ""; position: absolute; inset: 1.08rem 0 auto; border-top: 1px solid #bcc8d7; }
+  .tick, .turn-line, .cursor-line { position: absolute; height: 100%; pointer-events: none; }
+  .tick { top: 0; border-left: 1px solid #e4ebf3; }
+  .axis .tick { z-index: 1; border-color: #bcc8d7; height: .27rem; top: 1.08rem; }
+  .axis .tick span { position: absolute; top: -.94rem; font-size: .66rem; color: var(--subtle); white-space: nowrap; transform: translateX(-50%); }
+  .axis .tick:first-child span { transform: none; }
+  .axis .tick:last-of-type span { transform: translateX(-90%); }
+  .turn-line { border-left: 1px dashed #b6c5d6; }
+  .turn-marker { position: absolute; z-index: 3; top: 1.48rem; transform: translateX(-50%); padding: .1rem .29rem; border: 1px solid #aab9cd; border-radius: .32rem; color: var(--navy); background: #f5f8fc; font-size: .71rem; font-weight: 710; cursor: pointer; }
+  .turn-marker[aria-pressed=true] { color: white; background: var(--navy); border-color: var(--navy); }
+  .cursor-line { top: 0; z-index: 2; border-left: 2px solid #132e55; opacity: .85; }
+  .cursor-line::before { content: ""; position: absolute; inset: 0 auto auto -3px; border-inline: 2px solid transparent; border-top: 4px solid #132e55; }
+  .actor-p0 { --actor-color: var(--prefill); }
+  .actor-d0 { --actor-color: var(--decode0); }
+  .actor-d1 { --actor-color: var(--decode1); }
+  .actor-d2 { --actor-color: var(--decode2); }
+  .actor-shared { --actor-color: var(--shared); }
+  .actor-nixl { --actor-color: var(--nixl); }
+  .segment { position: absolute; z-index: 1; top: .53rem; height: 1.44rem; min-width: 3px; padding: 0 .15rem; border: 1px solid var(--actor-color); border-radius: .23rem; cursor: pointer; overflow: hidden; white-space: nowrap; font-size: .68rem; font-weight: 740; line-height: 1; }
+  .segment:hover, .segment:focus-visible, .segment[aria-pressed=true] { z-index: 3; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--actor-color); }
+  .gpu, .key.gpu { color: white; background: var(--actor-color); }
+  .gpu.partial { background: color-mix(in srgb, var(--actor-color) 16%, white); color: var(--ink); }
+  .cpu, .key.cpu { border: 1px dashed var(--actor-color); background: color-mix(in srgb, var(--actor-color) 15%, white); color: var(--ink); }
+  .disk, .key.disk { border: 1px solid var(--actor-color); background: repeating-linear-gradient(135deg, #fff 0, #fff 4px, color-mix(in srgb, var(--actor-color) 23%, #fff) 4px, color-mix(in srgb, var(--actor-color) 23%, #fff) 7px); color: var(--ink); }
+  .segment.open { border-right-style: dotted; }
+  .transfer, .key.transfer { color: var(--nixl); border: 0; background: color-mix(in srgb, var(--nixl) 17%, white); }
+  .segment.transfer { top: .71rem; height: 1.05rem; border-bottom: 2px solid var(--nixl); padding-inline: .3rem .6rem; }
+  .segment.transfer::after { content: ""; position: absolute; right: 0; bottom: 0; border-left: 5px solid var(--nixl); border-top: 4px solid transparent; }
+  .chart-empty { margin: .75rem 1rem; color: var(--subtle); }
+  .timeline-note { margin: 0; padding: .65rem 1rem .75rem; color: var(--subtle); font-size: .77rem; }
+  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem); align-items: start; gap: .85rem; }
+  .workspace > section { min-width: 0; }
+  .inspect { position: sticky; top: .85rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem; }
+  .inspect section { min-width: 0; padding: .85rem 1rem; }
+  .state { display: flex; flex-wrap: wrap; gap: .4rem; margin: .7rem 0; }
+  .badge { border: 1px solid var(--line); border-left: 3px solid var(--actor-color, var(--shared)); border-radius: .3rem; padding: .3rem .49rem; background: #f5f8fb; font-size: .78rem; }
+  .slot-list { margin: .6rem 0; padding-left: 1.1rem; font-size: .84rem; line-height: 1.55; overflow-wrap: anywhere; }
+  details { margin-top: .68rem; border-top: 1px solid var(--line); padding-top: .62rem; }
+  summary { color: var(--navy); cursor: pointer; font-size: .85rem; font-weight: 680; }
+  pre { margin: .6rem 0 0; padding: .73rem; border-radius: .42rem; border: 1px solid var(--line); background: #f7f9fc; tab-size: 2; font: .77rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 25rem; overflow: auto; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (max-width: 66rem) {
+    .workspace { grid-template-columns: minmax(0, 1fr); }
+    .inspect { position: static; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+  @media (max-width: 54rem) {
+    :root { --label-width: 8.7rem; }
+    .inspect { grid-template-columns: minmax(0, 1fr); }
+    .controls { gap: .7rem; }
+  }
+  @media (max-width: 33rem) {
+    :root { --label-width: 7.4rem; }
+    .shell { width: min(100% - 1rem, 93rem); }
+    .slider-row { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="shell">
+    <h1>KV lifecycle trace</h1>
+    <p id="context"></p>
+  </div>
+</header>
+<main class="shell">
+  <p id="error" role="alert" hidden></p>
+  <section class="controls card" aria-label="Trace filters">
+    <label>LMCache topology<select id="topology">
+      <option value="per_engine">Per-engine LMCache</option>
+      <option value="shared_engine">Shared LMCache</option>
+    </select></label>
+    <label>Turn<select id="turn"></select></label>
+    <label>Group timeline by<select id="group-by">
+      <option value="object">LMCache object</option>
+      <option value="actor">Actor or path</option>
+    </select></label>
+    <label id="actor-control" hidden>Actor or path<select id="actor"></select></label>
+    <label>Object / token range<select id="object"></select></label>
+    <label>GPU block<select id="block"></select></label>
+  </section>
+
+  <div class="workspace">
+  <section class="card" aria-label="Residency and movement timeline">
+    <div class="timeline-heading">
+      <div>
+        <h2 id="timeline-title">Residency and movement</h2>
+        <p class="readout" id="turn-summary"></p>
+      </div>
+      <div>
+        <div class="legend" aria-label="Actor colors">
+          <span><i class="key actor-p0"></i>P0</span><span><i class="key actor-d0"></i>D0</span>
+          <span><i class="key actor-d1"></i>D1</span><span><i class="key actor-d2"></i>D2</span>
+          <span><i class="key actor-shared"></i>Shared LMCache</span>
+        </div>
+        <div class="legend" aria-label="Interval styles">
+          <span><i class="key tier-key gpu"></i>GPU</span><span><i class="key tier-key cpu"></i>CPU</span>
+          <span><i class="key tier-key disk"></i>Disk write</span><span><i class="key actor-nixl transfer"></i>NIXL</span>
+        </div>
+      </div>
+    </div>
+    <div class="slider-row">
+      <label for="cursor">Time cursor<output id="cursor-value" for="cursor"></output>
+        <input id="cursor" type="range" step="any">
+      </label>
+      <label for="zoom">Timeline zoom<output id="zoom-value" for="zoom">1×</output>
+        <input id="zoom" type="range" min="1" max="8" step="1" value="1">
+      </label>
+    </div>
+    <div class="chart-scroll" id="chart-scroll" tabindex="0" aria-label="Scrollable trace timeline">
+      <div class="chart" id="chart"></div>
+    </div>
+    <p class="timeline-note">Time is measured from the first P request in this arm. Turn markers open the corresponding prompt. NIXL bars show the dispatch-to-ready window for a request. The time of an individual block transfer is unavailable. Disk bars start at a completed write. An open disk bar extends to the trace boundary.</p>
+  </section>
+
+  <div class="inspect">
+    <section class="card" aria-labelledby="selection-title">
+      <h2 id="selection-title">At the cursor</h2>
+      <p class="readout" id="selection"></p>
+      <p class="readout" id="cursor-summary"></p>
+      <div class="state" id="state"></div>
+      <ul class="slot-list" id="block-slots" aria-label="Selected block slots on this turn" hidden></ul>
+      <details id="block-detail" hidden>
+        <summary>Exact selected block token IDs</summary>
+        <pre id="block-ids" tabindex="0"></pre>
+      </details>
+      <details>
+        <summary>Exact prompt text</summary>
+        <pre id="prompt" tabindex="0"></pre>
+      </details>
+      <details>
+        <summary>Exact prompt token IDs</summary>
+        <pre id="prompt-ids" tabindex="0"></pre>
+      </details>
+    </section>
+    <section class="card" aria-labelledby="event-title">
+      <h2 id="event-title">Recorded events</h2>
+      <p class="readout" id="event-caption" aria-live="polite">Select an interval to inspect its raw trace records.</p>
+      <pre id="raw" tabindex="0" hidden></pre>
+    </section>
+  </div>
+  </div>
+</main>
+<script type="application/json" id="trace-data">__TRACE_DATA__</script>
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const time = new Intl.NumberFormat("en", {maximumFractionDigits: 3});
+const integer = new Intl.NumberFormat("en");
+const actorNames = {
+  p0: "P0", d0: "D0", d1: "D1", d2: "D2", lmcache: "Shared LMCache",
+  "lmcache-p0": "P0 LMCache", "lmcache-d0": "D0 LMCache",
+  "lmcache-d1": "D1 LMCache", "lmcache-d2": "D2 LMCache", nixl: "NIXL",
+};
+const tierNames = {gpu: "GPU", cpu: "CPU", disk: "Disk writes", transfer: "Transfer"};
+const elements = {
+  topology: $("topology"), turn: $("turn"), grouping: $("group-by"), actor: $("actor"),
+  object: $("object"), block: $("block"), cursor: $("cursor"), zoom: $("zoom"),
+};
+const state = {group: 0, block: null, actorLane: "", cursor: 0, interval: null};
+let data;
+let arm;
+let turn;
+let domain;
+let cursorLines = [];
+
+function node(tag, className, value) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (value !== undefined) element.textContent = value;
+  return element;
+}
+
+function options(control, choices, selected) {
+  control.replaceChildren(...choices.map(([value, label]) => {
+    const option = node("option", "", label);
+    option.value = value;
+    return option;
+  }));
+  if (choices.some(([value]) => String(value) === String(selected))) control.value = selected;
+}
+
+function actorClass(actor, tier) {
+  if (tier === "transfer") return "actor-nixl";
+  const owner = actor.replace(/^lmcache-/, "");
+  return Object.hasOwn(actorNames, owner) && /^(p0|d[0-2])$/.test(owner) ? "actor-" + owner : "actor-shared";
+}
+
+function laneName(actor, tier) {
+  return (actorNames[actor] || actor) + " · " + tierNames[tier];
+}
+
+function range(start, end) {
+  return `[${integer.format(start)}, ${integer.format(end)})`;
+}
+
+function groupLabel(group) {
+  const isObject = group.end - group.start === data.chunk_size;
+  return (isObject ? "Object " + (Math.floor(group.start / data.chunk_size) + 1) : "LMCache tail") +
+    " · " + range(group.start, group.end);
+}
+
+function blockLabel(block) {
+  return `Block ${block.logical} · ${range(block.start, block.end)}`;
+}
+
+function chosenGroup() {
+  return turn.groups[state.group];
+}
+
+function chosenBlocks(group) {
+  return state.block === null ? group.blocks : group.blocks.filter(block => block.logical === state.block);
+}
+
+function mergeRefs(intervals) {
+  return [...new Set(intervals.flatMap(interval => interval.refs || []))].sort((a, b) => a - b);
+}
+
+function groupsByActor(records) {
+  const result = new Map();
+  for (const record of records) {
+    if (!result.has(record.actor)) result.set(record.actor, []);
+    result.get(record.actor).push(record);
+  }
+  return result;
+}
+
+function getDomain(currentArm) {
+  let min = 0;
+  let max = currentArm.end_ms;
+  function include(interval) {
+    min = Math.min(min, interval.start);
+    max = Math.max(max, interval.end ?? interval.start);
+  }
+  for (const prompt of currentArm.turns) {
+    min = Math.min(min, prompt.ms);
+    max = Math.max(max, prompt.ms);
+    for (const group of prompt.groups) {
+      group.copies.forEach(include);
+      for (const block of group.blocks) {
+        block.gpu.forEach(include);
+        block.moves.forEach(include);
+      }
+    }
+  }
+  return [min, max > min ? max : min + 1];
+}
+
+function gpuSpans(records, total) {
+  const boundaries = [...new Set(records.flatMap(row => [row.start, row.end ?? domain[1]]))].sort((a, b) => a - b);
+  const spans = [];
+  for (let index = 0; index + 1 < boundaries.length; index++) {
+    const start = boundaries[index];
+    const stop = boundaries[index + 1];
+    const active = records.filter(row => row.start <= start && (row.end ?? domain[1]) >= stop);
+    if (!active.length) continue;
+    const logical = [...new Set(active.map(row => row.logical))].sort((a, b) => a - b);
+    const refs = mergeRefs(active);
+    const open = stop === domain[1] && active.some(row => row.end === null);
+    const span = {actor: records[0].actor, tier: "gpu", start, end: open ? null : stop,
+                  count: logical.length, total, logical, refs};
+    const previous = spans.at(-1);
+    if (previous && previous.end === start && String(previous.logical) === String(logical) &&
+        String(previous.refs) === String(refs)) {
+      previous.end = span.end;
+    } else {
+      spans.push(span);
+    }
+  }
+  return spans;
+}
+
+function movementSpans(records, total) {
+  const intervals = new Map();
+  for (const row of records) {
+    const key = JSON.stringify([row.actor, row.start, row.end]);
+    if (!intervals.has(key)) intervals.set(key, []);
+    intervals.get(key).push(row);
+  }
+  return [...intervals.values()].map(rows => ({
+    actor: "nixl", destination: rows[0].actor, tier: "transfer", start: rows[0].start, end: rows[0].end,
+    count: new Set(rows.map(row => row.logical)).size, total, refs: mergeRefs(rows),
+  }));
+}
+
+function spansFor(group, blocks) {
+  const gpu = blocks.flatMap(block => block.gpu.map(interval => ({...interval, logical: block.logical})));
+  const moves = blocks.flatMap(block => block.moves.map(interval => ({...interval, logical: block.logical})));
+  return [
+    ...[...groupsByActor(gpu).values()].flatMap(intervals => gpuSpans(intervals, blocks.length)),
+    ...movementSpans(moves, blocks.length),
+    ...group.copies,
+  ];
+}
+
+function lanesFor(spans) {
+  const lanes = new Map();
+  for (const span of spans) {
+    const key = span.actor + ":" + span.tier;
+    if (!lanes.has(key)) lanes.set(key, []);
+    lanes.get(key).push(span);
+  }
+  return lanes;
+}
+
+function percent(ms) {
+  return 100 * (ms - domain[0]) / (domain[1] - domain[0]);
+}
+
+function setCursor(value) {
+  state.cursor = Math.max(domain[0], Math.min(domain[1], value));
+  elements.cursor.value = state.cursor;
+  $("cursor-value").value = time.format(state.cursor) + " ms";
+  for (const line of cursorLines) line.style.left = percent(state.cursor) + "%";
+  updateBadges();
+}
+
+function setZoom() {
+  const factor = Number(elements.zoom.value);
+  $("zoom-value").value = factor + "×";
+  $("chart").style.width = factor * 100 + "%";
+}
+
+function showRaw(span, button) {
+  if (state.interval) state.interval.setAttribute("aria-pressed", "false");
+  state.interval = button;
+  button.setAttribute("aria-pressed", "true");
+  $("event-caption").textContent = spanDescription(span);
+  const raw = $("raw");
+  const refs = mergeRefs([span]);
+  raw.hidden = false;
+  raw.textContent = refs.length ? refs.map(index => {
+    const record = arm.records[index];
+    return typeof record === "string" ? record : JSON.stringify(record);
+  }).join("\n") : "No raw records are attached to this interval.";
+  setCursor(span.start);
+  if (matchMedia("(max-width: 66rem)").matches) $("event-title").scrollIntoView({block: "nearest"});
+}
+
+function clearRaw() {
+  state.interval = null;
+  $("event-caption").textContent = "Select an interval to inspect its raw trace records.";
+  $("raw").hidden = true;
+  $("raw").textContent = "";
+}
+
+function spanDescription(span) {
+  const label = span.tier === "transfer" ?
+    "NIXL P0 → " + (actorNames[span.destination] || span.destination) + " · request window" :
+    laneName(span.actor, span.tier);
+  const size = span.count == null ? "" : ` · ${span.count}/${span.total} blocks`;
+  const end = span.end == null ? "trace end" : time.format(span.end) + " ms";
+  return `${label}${size} · ${time.format(span.start)} ms to ${end}`;
+}
+
+function segment(span, groupIndex) {
+  const classes = ["segment", span.tier, actorClass(span.actor, span.tier)];
+  if (span.tier === "gpu" && span.count < span.total) classes.push("partial");
+  if (span.end == null) classes.push("open");
+  const width = percent(span.end ?? domain[1]) - percent(span.start);
+  const label = span.tier === "transfer" ? "P0 → " + (actorNames[span.destination] || span.destination) :
+    span.tier === "gpu" && span.count < span.total ? `${span.count}/${span.total}` : "";
+  const button = node("button", classes.join(" "), width >= 3 ? label : "");
+  button.type = "button";
+  button.title = spanDescription(span);
+  button.setAttribute("aria-label", button.title);
+  button.setAttribute("aria-pressed", "false");
+  button.style.left = percent(span.start) + "%";
+  button.style.width = Math.max(0, width) + "%";
+  button.addEventListener("click", () => {
+    if (groupIndex !== null && state.group !== groupIndex) {
+      state.group = groupIndex;
+      state.block = null;
+      elements.object.value = state.group;
+      updateBlockOptions();
+      updateSelection();
+      markSelectedRows();
+    }
+    showRaw(span, button);
+  });
+  return button;
+}
+
+function makeRow(label, detail, ticks, axis = false, groupIndex = null) {
+  const row = node("div", axis ? "chart-row axis" : "chart-row");
+  const name = node("div", "row-name");
+  if (groupIndex === null) {
+    name.textContent = label;
+  } else {
+    const button = node("button", "", label);
+    button.type = "button";
+    button.dataset.group = String(groupIndex);
+    button.setAttribute("aria-pressed", String(groupIndex === state.group));
+    button.addEventListener("click", () => {
+      state.group = groupIndex;
+      state.block = null;
+      elements.object.value = groupIndex;
+      updateBlockOptions();
+      updateSelection();
+      setCursor(state.cursor);
+      markSelectedRows();
+      clearRaw();
+    });
+    name.append(button);
+  }
+  if (detail) name.append(node("small", "", detail));
+  const track = node("div", "track");
+  for (const tick of ticks) {
+    const line = node("div", "tick");
+    line.style.left = percent(tick) + "%";
+    if (axis) line.append(node("span", "", time.format(tick / 1000) + " s"));
+    track.append(line);
+  }
+  for (const prompt of arm.turns) {
+    const line = node(axis ? "button" : "div", axis ? "turn-marker" : "turn-line",
+                      axis ? "T" + prompt.turn : undefined);
+    line.style.left = percent(prompt.ms) + "%";
+    if (axis) {
+      line.type = "button";
+      line.setAttribute("aria-label", "Show turn " + prompt.turn);
+      line.setAttribute("aria-pressed", String(turn.turn === prompt.turn));
+      line.addEventListener("click", () => chooseTurn(prompt.turn, true));
+    }
+    track.append(line);
+  }
+  const cursor = node("div", "cursor-line");
+  cursorLines.push(cursor);
+  track.append(cursor);
+  row.append(name, track);
+  return {row, track};
+}
+
+function markSelectedRows() {
+  for (const button of $("chart").querySelectorAll("[data-group]")) {
+    button.setAttribute("aria-pressed", String(Number(button.dataset.group) === state.group));
+  }
+}
+
+function renderTimeline() {
+  const chart = $("chart");
+  chart.replaceChildren();
+  cursorLines = [];
+  const steps = 5;
+  const ticks = Array.from({length: steps + 1}, (_, i) => domain[0] + (domain[1] - domain[0]) * i / steps);
+  const axis = makeRow("Trace time", "seconds from first P arrival", ticks, true);
+  chart.append(axis.row);
+
+  if (elements.grouping.value === "object" || state.block !== null) {
+    const group = chosenGroup();
+    for (const spans of lanesFor(spansFor(group, chosenBlocks(group))).values()) {
+      const {actor, tier} = spans[0];
+      const result = makeRow(laneName(actor, tier), "", ticks);
+      result.track.append(...spans.map(span => segment(span, null)));
+      chart.append(result.row);
+    }
+  } else {
+    turn.groups.forEach((group, index) => {
+      const spans = lanesFor(spansFor(group, group.blocks)).get(state.actorLane);
+      if (!spans) return;
+      const result = makeRow(groupLabel(group), `${group.blocks.length} GPU blocks`, ticks, false, index);
+      result.track.append(...spans.map(span => segment(span, index)));
+      chart.append(result.row);
+    });
+  }
+  if (chart.children.length === 1) chart.append(node("p", "chart-empty", "No intervals were recorded for this selection."));
+  setZoom();
+  setCursor(state.cursor);
+}
+
+function updateBadges() {
+  const group = chosenGroup();
+  const spans = spansFor(group, chosenBlocks(group));
+  const badges = [];
+  let complete = 0;
+  let partial = 0;
+  let cpu = 0;
+  let disk = 0;
+  for (const recent of lanesFor(spans).values()) {
+    const {actor, tier} = recent[0];
+    let label = "";
+    if (tier === "disk") {
+      const written = recent.filter(span => span.start <= state.cursor);
+      disk += written.length;
+      if (written.length) label = `${actorNames[actor] || actor} · ${written.length} disk write${written.length === 1 ? "" : "s"} by cursor`;
+    } else {
+      const active = recent.filter(span => span.start <= state.cursor &&
+        (span.end === null || state.cursor < span.end));
+      if (active.length) {
+        if (tier === "gpu") {
+          const {count, total} = active[0];
+          if (count === total) complete++;
+          else partial++;
+          label = `${actorNames[actor] || actor} GPU · ${count}/${total} blocks`;
+        } else if (tier === "cpu") {
+          cpu += active.length;
+          label = `${actorNames[actor] || actor} · CPU buffer`;
+        } else {
+          label = "NIXL · request window";
+        }
+      }
+    }
+    if (label) badges.push(node("span", "badge " + actorClass(actor, tier), label));
+  }
+  $("cursor-summary").textContent = `GPU actors · ${complete} complete, ${partial} partial | CPU copies · ${cpu} | Completed disk writes · ${disk}`;
+  if (!badges.length) badges.push(node("span", "badge", "No recorded interval at this cursor."));
+  $("state").replaceChildren(...badges);
+}
+
+function updateSelection() {
+  const group = chosenGroup();
+  const block = state.block === null ? null : chosenBlocks(group)[0];
+  const description = block ? blockLabel(block) : groupLabel(group);
+  const count = block ? block.end - block.start : group.end - group.start;
+  $("selection").textContent = `Turn ${turn.turn} · ${description} · ${count} token positions`;
+  const slots = $("block-slots");
+  slots.hidden = block === null;
+  const mappings = block === null ? [] : [
+    ["P0", block.p, block.start < turn.p_local ? "GPU prefix" : "model write"],
+    [actorNames[turn.decoder] || turn.decoder, block.d, block.start < turn.d_local ? "GPU prefix" : "NIXL"],
+  ];
+  slots.replaceChildren(...mappings.map(([actor, slot, source]) => {
+    const start = slot.block_id * data.block_size;
+    return node("li", "", `${actor} · ${source} · pool ${slot.pool_id} · block ${slot.block_id}, generation ${slot.generation} · valid slots ${range(start, start + count)}`);
+  }));
+  $("block-detail").hidden = block === null;
+  $("block-ids").textContent = block === null ? "" : JSON.stringify(turn.token_ids.slice(block.start, block.end));
+  if (block) $("block-detail").open = true;
+  $("prompt").textContent = turn.text || "Prompt text is unavailable in this bundle. The frozen token IDs are included below.";
+  $("prompt-ids").textContent = JSON.stringify(turn.token_ids);
+  updateBadges();
+}
+
+function updateBlockOptions() {
+  const choices = [["all", "All blocks in range"],
+    ...chosenGroup().blocks.map(block => [block.logical, blockLabel(block)])];
+  options(elements.block, choices, state.block ?? "all");
+}
+
+function updateActorOptions() {
+  const lanes = new Map();
+  for (const group of turn.groups) {
+    for (const [key, spans] of lanesFor(spansFor(group, group.blocks))) {
+      lanes.set(key, laneName(spans[0].actor, spans[0].tier));
+    }
+  }
+  options(elements.actor, [...lanes], state.actorLane);
+  state.actorLane = elements.actor.value;
+}
+
+function chooseTurn(value, scroll, previous = null) {
+  const next = arm.turns.find(prompt => prompt.turn === Number(value));
+  if (!next) return;
+  turn = next;
+  elements.turn.value = turn.turn;
+  state.group = previous && turn.groups[previous.group] ? previous.group : 0;
+  state.block = previous && chosenGroup().blocks.some(block => block.logical === previous.block) ? previous.block : null;
+  state.cursor = turn.ms + (previous?.offset ?? 0);
+  options(elements.object, turn.groups.map((group, index) => [index, groupLabel(group)]), state.group);
+  updateBlockOptions();
+  updateActorOptions();
+  const local = integer.format(turn.d_local);
+  const remote = integer.format(turn.nixl_tokens);
+  $("turn-summary").textContent = `Turn ${turn.turn} · ${actorNames[turn.decoder] || turn.decoder} · ${integer.format(turn.token_ids.length)} prompt tokens · P local ${integer.format(turn.p_local)} · D local ${local} · NIXL ${remote}`;
+  clearRaw();
+  renderTimeline();
+  updateSelection();
+  if (scroll && Number(elements.zoom.value) > 1) {
+    const track = $("chart").querySelector(".axis .track");
+    const left = (track.clientWidth * percent(state.cursor) / 100) + track.offsetLeft;
+    $("chart-scroll").scrollLeft = Math.max(0, left - $("chart-scroll").clientWidth / 2);
+  }
+}
+
+function chooseTopology(value, preserveTurn) {
+  const previous = preserveTurn && turn ? {
+    group: state.group, block: state.block, offset: state.cursor - turn.ms,
+  } : null;
+  arm = data.arms[value];
+  domain = getDomain(arm);
+  elements.cursor.min = domain[0];
+  elements.cursor.max = domain[1];
+  const currentTurn = previous ? turn.turn : arm.turns[0].turn;
+  options(elements.turn, arm.turns.map(prompt => [prompt.turn, "Turn " + prompt.turn]), currentTurn);
+  chooseTurn(currentTurn, Boolean(previous), previous);
+}
+
+try {
+  data = JSON.parse($("trace-data").textContent);
+  const layout = data.layout.replaceAll("_", "-");
+  $("context").textContent = `${data.mode} · ${layout} · Conversation ${data.conversation_id} · ${data.block_size}-token GPU blocks · ${data.chunk_size}-token LMCache objects`;
+  chooseTopology(elements.topology.value, false);
+  elements.topology.addEventListener("change", () => chooseTopology(elements.topology.value, true));
+  elements.turn.addEventListener("change", () => chooseTurn(elements.turn.value, true));
+  elements.grouping.addEventListener("change", () => {
+    $("actor-control").hidden = elements.grouping.value !== "actor";
+    state.block = null;
+    updateBlockOptions();
+    updateSelection();
+    clearRaw();
+    renderTimeline();
+  });
+  elements.actor.addEventListener("change", () => {
+    state.actorLane = elements.actor.value;
+    state.block = null;
+    updateBlockOptions();
+    updateSelection();
+    clearRaw();
+    renderTimeline();
+  });
+  elements.object.addEventListener("change", () => {
+    state.group = Number(elements.object.value);
+    state.block = null;
+    updateBlockOptions();
+    updateSelection();
+    clearRaw();
+    renderTimeline();
+  });
+  elements.block.addEventListener("change", () => {
+    state.block = elements.block.value === "all" ? null : Number(elements.block.value);
+    updateSelection();
+    clearRaw();
+    renderTimeline();
+  });
+  elements.cursor.addEventListener("input", () => setCursor(Number(elements.cursor.value)));
+  elements.zoom.addEventListener("input", setZoom);
+} catch (error) {
+  $("error").hidden = false;
+  $("error").textContent = "Could not read the embedded trace data. " + error.message;
+}
+</script>
+</body>
+</html>
