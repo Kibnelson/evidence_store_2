@@ -15,6 +15,7 @@ WORKLOAD = ROOT / "workloads/mtrag-multi-turn-repeat.json"
 CONVERSATION = "1534a095279f2cb888fb0bea17bd70da"
 BLOCK_SIZE = 16
 CHUNK_SIZE = 256
+MAX_PROMPT_TOKENS = 8191
 NAMESPACE = "mtrag:clapnq"
 IDENTITY_FIELDS = ("doc_id", "chunk_id", "chunk_version")
 
@@ -155,7 +156,7 @@ def render_turn(known_turns, passages, tokenizer, carry_forward, max_prompt_toke
     prompt = "".join(parts)
     encoded = tokenizer.encode(prompt, add_special_tokens=False)
     token_ids = encoded.ids
-    if not 1 < len(token_ids) <= max_prompt_tokens:
+    if len(token_ids) <= 1 or (max_prompt_tokens is not None and len(token_ids) > max_prompt_tokens):
         layout = "carry_forward" if carry_forward else "chat"
         raise ValueError(f"{layout} turn {current['turn']} has {len(token_ids)} tokens "
                          f"outside the prompt budget {max_prompt_tokens}")
@@ -184,22 +185,23 @@ def render_turn(known_turns, passages, tokenizer, carry_forward, max_prompt_toke
     }
 
 
-def freeze(source, tokenizer_path, conversation, max_prompt_tokens):
+def load_tokenizer(provenance, tokenizer_path):
     from tokenizers import Tokenizer
 
-    manifest = json.loads(WORKLOAD.read_text(encoding="utf-8"))
-    provenance = manifest["provenance"]
-    model, revision = provenance["tokenizer_model"], provenance["tokenizer_revision"]
     if tokenizer_path is None:
         from huggingface_hub import hf_hub_download
 
-        tokenizer_path = Path(hf_hub_download(model, "tokenizer.json", revision=revision))
+        tokenizer_path = Path(hf_hub_download(
+            provenance["tokenizer_model"], "tokenizer.json", revision=provenance["tokenizer_revision"],
+        ))
     tokenizer_digest = sha256_file(tokenizer_path)
     if tokenizer_digest != provenance["tokenizer_asset_sha256"]:
         raise ValueError("Tokenizer asset differs from the frozen V1 model revision")
-    tokenizer = Tokenizer.from_file(str(tokenizer_path))
-    turns = read_selected_turns(source, manifest, conversation)
-    passages = read_selected_passages(source, manifest, turns)
+    return Tokenizer.from_file(str(tokenizer_path)), tokenizer_digest
+
+
+def render_fixture(conversation, provenance, workload_digest, turns, passages, tokenizer,
+                   tokenizer_digest, max_prompt_tokens):
     layouts = {
         layout: [render_turn(turns[:index + 1], passages, tokenizer,
                              carry_forward, max_prompt_tokens) for index in range(len(turns))]
@@ -207,10 +209,10 @@ def freeze(source, tokenizer_path, conversation, max_prompt_tokens):
     }
     return {
         "schema_version": 1,
-        "model": model,
-        "model_revision": revision,
+        "model": provenance["tokenizer_model"],
+        "model_revision": provenance["tokenizer_revision"],
         "tokenizer_sha256": tokenizer_digest,
-        "workload_sha256": sha256_file(WORKLOAD),
+        "workload_sha256": workload_digest,
         "dataset": "mtrag",
         "domain": "clapnq",
         "conversation_id": conversation,
@@ -218,6 +220,16 @@ def freeze(source, tokenizer_path, conversation, max_prompt_tokens):
         "chunk_size": CHUNK_SIZE,
         "layouts": layouts,
     }
+
+
+def freeze(source, tokenizer_path, conversation, max_prompt_tokens):
+    manifest = json.loads(WORKLOAD.read_text(encoding="utf-8"))
+    provenance = manifest["provenance"]
+    tokenizer, tokenizer_digest = load_tokenizer(provenance, tokenizer_path)
+    turns = read_selected_turns(source, manifest, conversation)
+    passages = read_selected_passages(source, manifest, turns)
+    return render_fixture(conversation, provenance, sha256_file(WORKLOAD), turns, passages,
+                          tokenizer, tokenizer_digest, max_prompt_tokens)
 
 
 def write_fixture(output, contents):
@@ -242,7 +254,7 @@ def main():
     parser.add_argument("--mt-rag", type=Path, default=ROOT / "third_party/checkouts/mt-rag")
     parser.add_argument("--tokenizer-file", type=Path, help="use a local copy of the pinned tokenizer JSON")
     parser.add_argument("--conversation", default=CONVERSATION)
-    parser.add_argument("--max-prompt-tokens", type=int, default=8191, help="leave space for generation")
+    parser.add_argument("--max-prompt-tokens", type=int, default=MAX_PROMPT_TOKENS, help="leave space for generation")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
