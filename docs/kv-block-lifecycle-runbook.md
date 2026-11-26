@@ -9,6 +9,8 @@ The pilot runs one complete five-turn MT-RAG CLAPNQ conversation through one pre
 
 Each vLLM GPU block holds 16 tokens. LMCache stores complete 256-token objects, each covering 16 of those blocks. The natural tail remains in the prompt and is tracked separately. P keeps its GPU prefix cache warm across the five turns and skips LMCache lookups. The launcher rotates through the three decode engines and clears the selected engine's GPU prefix cache before each measured request. The handoff is P GPU → shared LMCache → D GPU. P samples one token to finish prefill. D generates eight tokens with greedy decoding, and the driver checks that D's model writes cover the prompt tail and the first seven generated tokens. D needs a further generation step to write KV for its eighth sampled token.
 
+The pilot uses small GPU block pools to expose slot reuse. All four workers use the LMCache connector's CUDA IPC path, which supports fixed block counts on this vLLM pin. The LMCache storage tier is selected independently.
+
 In memory mode, LMCache keeps the objects in CPU memory. Both modes use the four GPUs for the model. In disk mode, LMCache writes to a local disk with `O_DIRECT`, releases the CPU-resident copy after the write, then reads it from disk for D. CPU buffers still stage the GPU transfers. The disk phase records the completed direct write and read for the matched objects. [vLLM hooks](../third_party/lifecycle/vllm.patch) · [LMCache hooks](../third_party/lifecycle/lmcache.patch)
 
 ## 1. Start tmux and allocate four GPUs

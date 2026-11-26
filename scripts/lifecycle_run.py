@@ -130,6 +130,8 @@ class Arm:
                 "kv_connector_extra_config": {
                     "lmcache.mp.host": "tcp://127.0.0.1",
                     "lmcache.mp.port": port,
+                    # Fixed-size GPU pools use the connector's CUDA IPC path.
+                    "lmcache.mp.use_vmm_api": False,
                     "lmcache.mp.save_unfull_chunk": False,
                     "lmcache.mp.save_decode_cache": False,
                 },
@@ -140,8 +142,8 @@ class Arm:
                 "--tokenizer-revision", self.fixture["model_revision"],
                 "--host", "127.0.0.1", "--port", str(engine_port), "--tensor-parallel-size", "1",
                 "--enable-prefix-caching", "--enforce-eager", "--max-num-seqs", "1",
-                "--max-model-len", str(self.max_len), "--max-num-batched-tokens",
-                str(max(self.max_len, 2048)), "--gpu-memory-utilization", "0.75",
+                "--max-model-len", str(self.max_len), "--max-num-batched-tokens", str(self.max_len),
+                "--gpu-memory-utilization", "0.75",
                 "--block-size", str(block_size), "--num-gpu-blocks-override", str(blocks),
                 "--kv-transfer-config", json.dumps(connector),
             ], gpu)
