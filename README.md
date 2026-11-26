@@ -35,4 +35,4 @@ python3 -B scripts/prepare_full_blend.py --verify
 
 ## KV block lifecycle pilot
 
-The [runbook](docs/kv-block-lifecycle-runbook.md) runs one five-turn MT-RAG conversation in 1P/3D normal prefix mode. It pairs CPU memory and direct disk LMCache runs under both current-docs and carry-forward prompt layouts.
+The [runbook](docs/kv-block-lifecycle-runbook.md) runs one five-turn MT-RAG conversation in 1P/3D normal prefix mode. It pairs CPU memory and direct disk LMCache runs under both current-docs and carry-forward prompt layouts. The [pilot walkthrough](docs/kv-block-lifecycle-mtrag-pilot.md) follows the prompt tokens through P, the cache tier, and D.

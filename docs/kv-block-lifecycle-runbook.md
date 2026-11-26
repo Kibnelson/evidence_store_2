@@ -257,6 +257,50 @@ From the Mac, substitute the login review directory printed with the digest and 
 
 Increase the workload after all four pilot phases pass. Freeze each additional conversation once, run both layouts in both tiers, and keep the four reports tied to that conversation's fixture.
 
+## 7. Publish the pilot traces
+
+Run this once the four-arm comparison passes. The report bundles the frozen prompt IDs and evidence spans, per-turn block joins, event traces, and worker logs. The publication step uses a fresh scratch clone and a results branch for this job. [Pilot walkthrough](kv-block-lifecycle-mtrag-pilot.md) · [Report collector](../scripts/lifecycle_collect.py)
+
+If the job has multiple completed results directories, set `LIFECYCLE_RESULTS_DIR` to the absolute path printed by the successful run you want to publish.
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  : "${SLURM_JOB_ID:?Run in the allocation that produced the results}"
+  root="/tmp/$(id -un)/es2-lifecycle-$SLURM_JOB_ID"
+  results="${LIFECYCLE_RESULTS_DIR:-}"
+  if [[ -z "$results" ]]; then
+    shopt -s nullglob
+    comparisons=("$root"/results.*/comparison.json)
+    if (( ${#comparisons[@]} != 1 )); then
+      printf 'Set LIFECYCLE_RESULTS_DIR to the completed results directory.\n' >&2
+      exit 1
+    fi
+    results="${comparisons[0]%/comparison.json}"
+  fi
+
+  export GIT_SSH_COMMAND='ssh -o BatchMode=yes'
+  publisher="$(mktemp -d "$root/publish-traces.XXXXXX")"
+  branch="results/lifecycle-$SLURM_JOB_ID"
+  report="reports/lifecycle/mtrag-$SLURM_JOB_ID"
+  printf 'Results %s\nPublish checkout %s\n' "$results" "$publisher"
+  git clone --depth=1 --single-branch --no-tags --branch kv-block-lifecycle \
+    git@github.com:Kibnelson/evidence_store_2.git "$publisher"
+  cd "$publisher"
+  git switch -c "$branch"
+  python3 -B scripts/lifecycle_collect.py "$results" \
+    --manifest "$root/manifest.json" --output "$report" --include-worker-logs
+  (cd "$report" && sha256sum -c SHA256SUMS)
+  git add -- "$report"
+  git commit -m "Archive lifecycle traces from Slurm job $SLURM_JOB_ID"
+  git push --set-upstream origin "HEAD:refs/heads/$branch"
+  printf 'Published %s on %s at %s\n' "$report" "$branch" "$(git rev-parse --short HEAD)"
+)
+```
+
+Open the results branch and select `reports/lifecycle/mtrag-<job>`. The collector validates the original manifest hash and the four passed arms before writing the report. The checksum list covers the report files, including each compressed trace and log.
+
 ## Stage the local donors if needed
 
 Use this once when the cluster has no pristine copies at the pinned commits. The Git clone in step 2 supplies the lifecycle code. This transfer supplies the three verified third-party Git checkouts.
@@ -301,7 +345,8 @@ From a second `teach-node-09` terminal, relay the verified archive into the acti
     node="/tmp/$(id -un)"
     stage="$(mktemp -d "$node/.es2-donors.XXXXXX")"
     archive="$(mktemp "$node/.es2-archive.XXXXXX")"
-    trap '''rm -f -- "$archive"''' EXIT
+    cleanup() { rm -f -- "$archive"; }
+    trap cleanup EXIT
     cat > "$archive"
     printf "%s  %s\n" "$1" "$archive" | sha256sum -c -
     tar -xzf "$archive" -C "$stage"
