@@ -133,6 +133,18 @@ Answer:
 
 P reused **2,000** prompt tokens on GPU and computed **660**. d0 reused **688** on GPU and pulled **1,972** over NIXL in **124 blocks** (292,552,704 B).
 
+### Origin of D0 GPU reuse on turn 4
+
+The **688 tokens came from D0's own GPU prefix cache after turn 1**. The per-engine setting gives each worker its own LMCache server. Each decoder also keeps its own GPU prefix cache warm across its turns.
+
+| Turn | Decoder | What the trace shows |
+| --- | --- | --- |
+| 1 | D0 | D0 pulled all 702 prompt tokens from P over NIXL. Its first 43 full blocks stayed GPU-resident when the request released its references. |
+| 2–3 | D1, D2 | The requests went to other decoders. D0's 43 blocks stayed resident. |
+| 4 | D0 | The lookup reused the same D0 pool, physical block IDs `1–43`, and generation `1`, covering prompt positions `[0, 688)`. The turn recorded zero LMCache-to-GPU restores. |
+
+**Why 688 of the 702 matching prompt tokens?** GPU prefix reuse uses complete 16-token blocks in this run. Logical block `43` spans `[688, 704)`. Its first 14 tokens match turn 1. The last two were generated answer tokens on turn 1, while the turn-4 prompt has the frozen reference answer in those positions. The full block has a different prefix hash, so D0 pulled block `43` from P over NIXL. [Raw request and GPU slot traces](conversations/01-1534a095279f2cb888fb0bea17bd70da/traces.tar.gz)
+
 ## Request timeline
 
 Times are milliseconds from P scheduler arrival. NIXL readiness covers the request's transfer batch.

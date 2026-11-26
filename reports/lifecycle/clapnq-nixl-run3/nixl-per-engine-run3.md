@@ -193,7 +193,7 @@ For example, carry-forward turn 4 in conversation 01 had 2,660 tokens, which use
 
 [Open the prompt-first view](prompt-timeline-turn4-per-engine.md) to see the exact prompt, token IDs, all 167 numbered blocks, and their GPU and LMCache events.
 
-Conversation 01, turn 4. Logical block 43 falls immediately after D0's local prefix. The events below follow the P GPU slot, the NIXL handoff into D0's GPU slot, and related LMCache object events.
+On conversation 01, turn 4, D0 reused 688 prompt tokens from the 43 GPU blocks it kept after turn 1. Logical block 43 was the first NIXL pull because its final two token positions differed from the block D0 had cached. [Origin of D0's GPU reuse](prompt-timeline-turn4-per-engine.md#origin-of-d0-gpu-reuse-on-turn-4)
 
 Prompt tokens `[688, 704)` in a 2,660-token request.
 
