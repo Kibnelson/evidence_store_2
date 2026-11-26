@@ -1,6 +1,6 @@
 # Trace the KV block lifecycle in V2
 
-The pilot runs one complete five-turn MT-RAG CLAPNQ conversation through one prefill engine (P) and three decode engines (D). It uses normal vLLM prefix prefill. Step 5 selects either a shared-LMCache handoff or a native NIXL handoff with one LMCache server per engine. The four arms for each deployment use the same pinned revision of `Qwen/Qwen3-4B-Instruct-2507`, reference Q&A, and six ranked current passages per turn. [Frozen workload](../workloads/mtrag-multi-turn-repeat.json) · [Prompt preparation](../scripts/lifecycle_prepare.py)
+The pilot runs one complete five-turn MT-RAG CLAPNQ conversation through one prefill engine (P) and three decode engines (D). It uses normal vLLM prefix prefill. Step 5 selects either a shared-LMCache handoff or a native NIXL handoff with per-engine or experimental shared LMCache. The four arms for each deployment use the same pinned revision of `Qwen/Qwen3-4B-Instruct-2507`, reference Q&A, and six ranked current passages per turn. [Frozen workload](../workloads/mtrag-multi-turn-repeat.json) · [Prompt preparation](../scripts/lifecycle_prepare.py)
 
 | LMCache mode | Chat RAG | Carry-forward RAG |
 | --- | --- | --- |
@@ -160,8 +160,9 @@ Select the two environment variables in the GPU shell. Each deployment uses the 
 | --- | --- | --- |
 | `lmcache` | `shared` | One 8 GB LMCache server holds the prefix between P and D. This is the job 30734 setup. |
 | `nixl` | `per_engine` | Native NIXL pulls the KV from P into D. Four 2 GB LMCache servers provide the same total CPU cache budget for cross-request reuse. |
+| `nixl` | `shared_engine` | Native NIXL pulls the KV from P into D. All four workers use one 8 GB LMCache server for cross-request reuse. Experimental. |
 
-The launcher validates these pairs. The pinned upstream NIXL recipe uses one LMCache server per engine. The shared-LMCache handoff requires a cache accessible to both sides. Switching between these deployments changes both the handoff path and the cache topology. [Pinned NIXL and LMCache recipe](https://github.com/LMCache/LMCache/blob/042d47abdef0d460cf2cb0d5720e8a59280cda8a/docs/source/mp/disaggregated_prefill.rst)
+The pinned upstream NIXL recipe uses one LMCache server per engine. The `shared_engine` arm is an opt-in experiment and requires measured NIXL traffic on the first cold request. Comparing the two NIXL arms holds the handoff fixed and changes the LMCache topology. [Pinned NIXL and LMCache recipe](https://github.com/LMCache/LMCache/blob/042d47abdef0d460cf2cb0d5720e8a59280cda8a/docs/source/mp/disaggregated_prefill.rst)
 
 For the original shared-LMCache run, set:
 
@@ -179,7 +180,17 @@ export EVIDENCESTORE_LMCACHE_TOPOLOGY=per_engine
 export EVIDENCESTORE_PD_COLD_D=0
 ```
 
-NIXL's default retains D's local GPU prefix state and uses the native P response handshake to dispatch the original prompt to D. P and D also retain their native LMCache lookup and offload behavior. Set `EVIDENCESTORE_PD_COLD_D=1` in the NIXL run when you want the same reset-before-request control as the shared run. The shared arm also skips external LMCache loads on P. The comparison prints the D cache control and memory budget for each deployment.
+For the experimental NIXL run with one shared LMCache server, set:
+
+```bash
+export EVIDENCESTORE_PD_HANDOFF=nixl
+export EVIDENCESTORE_LMCACHE_TOPOLOGY=shared_engine
+export EVIDENCESTORE_PD_COLD_D=0
+```
+
+Both NIXL topologies keep `lmcache.mp.save_decode_cache=false`. D creates generated-answer KV on its GPU during decode. The LMCache store receipts are checked against the prompt boundary, and native LMCache prompt offload remains enabled.
+
+NIXL's default retains D's local GPU prefix state and uses the native P response handshake to dispatch the original prompt to D. P and D also retain their native LMCache lookup and offload behavior. Set `EVIDENCESTORE_PD_COLD_D=1` in the NIXL run when you want the same reset-before-request control as the shared run. The original `lmcache` + `shared` arm also skips external LMCache loads on P. The comparison prints the D cache control and memory budget for each deployment.
 
 After selecting a deployment, run this block from the GPU shell. The first arm is CPU memory with the chat layout. The loop stops on the first failed arm. The disk arms use fresh directories on the node-local filesystem.
 
@@ -195,6 +206,9 @@ After selecting a deployment, run this block from the GPU shell. The first arm i
   if [[ "${EVIDENCESTORE_PD_HANDOFF:-lmcache}" == nixl ]]; then
     receipt="$root/activation-nixl.path"
     port_base=18700
+    if [[ "${EVIDENCESTORE_LMCACHE_TOPOLOGY:-per_engine}" == shared_engine ]]; then
+      port_base=18800
+    fi
   fi
   if [[ ! -s "$receipt" ]]; then
     printf 'Missing runtime receipt %s. Complete Step 4 for the selected handoff.\n' "$receipt" >&2
@@ -223,13 +237,13 @@ After selecting a deployment, run this block from the GPU shell. The first arm i
 )
 ```
 
-If a phase fails, keep its logs and inspect `failure.json`. The shared deployment needs six consecutive ports and NIXL needs sixteen. Choose a fresh range on a port conflict. A retry with the same manifest creates a fresh results directory.
+If a phase fails, keep its logs and inspect `failure.json`. The LMCache-only handoff needs a six-port range. The NIXL handoff uses a sixteen-port range. Choose a fresh range on a port conflict. A retry with the same manifest creates a fresh results directory.
 
 ## 6. Read the results
 
 Use `comparison.json` for matched memory-versus-disk totals and output token agreement within each layout. The two layouts produce different prompts, so report their prompt sizes alongside their movement and reuse counts.
 
-For NIXL, `summary.json` reports native transferred bytes, block occurrences, and transfer time. `lmcache_by_server` records cache movement separately for each LMCache server. P/D request receipts carry D's local prefix, external prefix, model-written tail, and dispatch-to-ready time when a restore occurred. In the shared deployment, LMCache object and disk receipts describe the handoff directly. On one node these are functional NIXL measurements. Record the actual backend before interpreting network performance.
+For NIXL, `summary.json` reports native transferred bytes, block occurrences, and transfer time. `lmcache_by_server` records cache movement and physical disk I/O for each LMCache server. `lmcache_by_worker` attributes GPU↔LMCache bytes to the P or D request ID, including when the workers use a common server. P/D request receipts carry D's local prefix, external prefix, model-written tail, and dispatch-to-ready time when a restore occurred. In the shared deployment, LMCache object and disk receipts describe the handoff directly. On one node these are functional NIXL measurements. Record the actual backend before interpreting network performance.
 
 Once both four-arm directories are complete, compare them from the cloned source directory.
 
@@ -238,6 +252,13 @@ python3 -B scripts/lifecycle_compare.py "$nixl_results" --against "$shared_resul
 ```
 
 Set `nixl_results` and `shared_results` to the printed absolute results paths. The comparison checks the original manifest and turn routing and records output-token differences and whether the D reset control and total LMCache budget match.
+
+To compare only the LMCache topology, run both NIXL configurations and compare their four-arm results directories with the same D reset control.
+
+```bash
+python3 -B scripts/lifecycle_compare.py "$nixl_shared_results" --against "$nixl_per_engine_results"
+```
+
 
 
 | Artifact per phase | What to inspect |
@@ -349,13 +370,12 @@ If the job has multiple completed results directories, set `LIFECYCLE_RESULTS_DI
 
   export GIT_SSH_COMMAND='ssh -o BatchMode=yes'
   publisher="$(mktemp -d "$root/publish-traces.XXXXXX")"
-  handoff="$(python3 -c 'import json, sys
+  suffix="$(python3 -c 'import json, sys
 with open(sys.argv[1]) as stream:
-    print(json.load(stream).get("handoff", "lmcache"))' "$results/memory-chat/summary.json")"
-  suffix=""
-  if [[ "$handoff" == nixl ]]; then
-    suffix="-nixl"
-  fi
+    summary = json.load(stream)
+if summary.get("handoff") == "nixl":
+    print("-nixl-shared" if summary.get("lmcache_topology") == "shared_engine" else "-nixl")' \
+    "$results/memory-chat/summary.json")"
   branch="results/lifecycle-$SLURM_JOB_ID$suffix"
   report="reports/lifecycle/mtrag-$SLURM_JOB_ID$suffix"
   printf 'Results %s\nPublish checkout %s\n' "$results" "$publisher"
@@ -373,7 +393,7 @@ with open(sys.argv[1]) as stream:
 )
 ```
 
-Open the results branch and select `reports/lifecycle/mtrag-<job>`. The NIXL report uses the `-nixl` suffix on the branch and directory. The collector validates the original manifest hash and the four passed arms before writing the report. The checksum list covers the report files, including each compressed trace and log.
+Open the results branch and select `reports/lifecycle/mtrag-<job>`. The NIXL result uses the `-nixl` suffix for per-engine caches and `-nixl-shared` for the experimental shared cache. The collector validates the original manifest hash and the four passed arms before writing the report. The checksum list covers the report files, including each compressed trace and log.
 
 ## Stage the local donors if needed
 

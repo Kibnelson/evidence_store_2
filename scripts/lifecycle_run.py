@@ -55,16 +55,19 @@ def stop_process(process):
 DECODE_OUTPUT_TOKENS = 8
 WORKERS = ("p0", "d0", "d1", "d2")
 L1_BUDGET_GB = 8
+SAVE_DECODE_CACHE = False
 
 
 def deployment_from_env(env):
     handoff = env.get("EVIDENCESTORE_PD_HANDOFF", "lmcache")
-    supported = {"lmcache": "shared", "nixl": "per_engine"}
+    supported = {"lmcache": ("shared",), "nixl": ("per_engine", "shared_engine")}
     if handoff not in supported:
         raise ValueError("EVIDENCESTORE_PD_HANDOFF must be lmcache or nixl")
-    topology = env.get("EVIDENCESTORE_LMCACHE_TOPOLOGY", supported[handoff])
-    if topology != supported[handoff]:
-        raise ValueError(f"{handoff} handoff requires EVIDENCESTORE_LMCACHE_TOPOLOGY={supported[handoff]}")
+    topologies = supported[handoff]
+    topology = env.get("EVIDENCESTORE_LMCACHE_TOPOLOGY", topologies[0])
+    if topology not in topologies:
+        choices = " or ".join(topologies)
+        raise ValueError(f"{handoff} handoff requires EVIDENCESTORE_LMCACHE_TOPOLOGY to be {choices}")
     cold = env.get("EVIDENCESTORE_PD_COLD_D", "1" if handoff == "lmcache" else "0")
     if cold not in {"0", "1"}:
         raise ValueError("EVIDENCESTORE_PD_COLD_D must be 0 or 1")
@@ -81,7 +84,7 @@ class Arm:
         self.trace = Trace(self.directory / "traces", args.mode)
         self.processes = {}
         self.ports = {worker: args.port_base + i for i, worker in enumerate(WORKERS)}
-        if args.topology == "shared":
+        if args.topology in {"shared", "shared_engine"}:
             self.cache_ports = {"lmcache": args.port_base + len(WORKERS)}
             self.worker_caches = dict.fromkeys(WORKERS, "lmcache")
         else:
@@ -162,7 +165,7 @@ class Arm:
                 # Fixed-size GPU pools use the connector's CUDA IPC path.
                 "lmcache.mp.use_vmm_api": False,
                 "lmcache.mp.save_unfull_chunk": False,
-                "lmcache.mp.save_decode_cache": False,
+                "lmcache.mp.save_decode_cache": SAVE_DECODE_CACHE,
             },
         }
         if self.args.handoff == "lmcache":
@@ -257,8 +260,12 @@ class Arm:
                     print(f"Turn {result['turn']} · {worker} · "
                           f"{result['d_prefix_loaded_tokens']} external KV tokens", flush=True)
             if self.args.handoff == "nixl":
-                self.wait("P's LMCache offload in the combined connector", lambda: self.trace.select(
-                    "lmcache_store_completed", worker=self.worker_caches["p0"], success=True,
+                p_requests = {turn["p_request_id"] for turn in turns}
+                self.wait("P's LMCache offload in the combined connector", lambda: any(
+                    row["request_id"] in p_requests and row["bytes"] > 0
+                    for row in self.trace.select(
+                        "lmcache_store_completed", worker=self.worker_caches["p0"], success=True,
+                    )
                 ) or None)
             # Trace explicit resets after the measured turns so even the final D assignments
             # have release/eviction evidence. Preserve P's cache until the arm is completed.
@@ -280,6 +287,7 @@ class Arm:
             }
             for name in self.cache_ports
         }
+        lmcache_by_worker = self.lmcache_worker_totals(turns)
         nixl_bytes = sum(turn.get("nixl_transferred_bytes", 0) for turn in turns)
         if self.args.handoff == "nixl" and not nixl_bytes:
             raise RuntimeError("No native NIXL transfer was observed in the arm")
@@ -288,6 +296,8 @@ class Arm:
             "handoff": self.args.handoff, "lmcache_topology": self.args.topology,
             "cold_d": self.args.cold_d, "lmcache_l1_budget_gb": L1_BUDGET_GB,
             "lmcache_by_server": lmcache_by_server,
+            "lmcache_by_worker": lmcache_by_worker,
+            "lmcache_save_decode_cache": SAVE_DECODE_CACHE,
             "nixl_transferred_bytes": nixl_bytes,
             "nixl_transfers": sum(turn.get("nixl_transfers", 0) for turn in turns),
             "nixl_restored_blocks": sum(len(turn.get("blocks", [])) for turn in turns),
@@ -303,7 +313,7 @@ class Arm:
             "p_gpu_prefix_tokens": sum(turn["p_gpu_prefix_tokens"] for turn in turns),
             "d_disk_read_bytes": sum(row["bytes"] for obj in restored for row in obj["disk_reads"]),
             "disk_write_bytes": sum(row["bytes"] for row in self.trace.by_event["lmcache_disk_write_completed"]),
-            "p_gpu_to_lmcache_bytes": lmcache_by_server[self.worker_caches["p0"]]["gpu_to_lmcache_bytes"],
+            "p_gpu_to_lmcache_bytes": lmcache_by_worker["p0"]["gpu_to_lmcache_bytes"],
             "gpu_evictions_by_reason": dict(Counter(
                 row["reason"] for row in self.trace.by_event["vllm_gpu_block_evicted"]
             )),
@@ -311,6 +321,31 @@ class Arm:
             "event_counts": event_counts,
         })
         print(f"Verified {self.directory / 'summary.json'}", flush=True)
+
+    def lmcache_worker_totals(self, turns):
+        requests = {}
+        for turn in turns:
+            requests[turn["p_request_id"]] = ("p0", turn["prompt_tokens"])
+            requests[turn["d_request_id"]] = (turn["decode_worker"], turn["prompt_tokens"])
+        totals = {worker: {"gpu_to_lmcache_bytes": 0, "lmcache_to_gpu_bytes": 0}
+                  for worker in self.ports}
+        for event, key in (
+            ("lmcache_store_completed", "gpu_to_lmcache_bytes"),
+            ("lmcache_retrieve_completed", "lmcache_to_gpu_bytes"),
+        ):
+            for row in self.trace.select(event, success=True):
+                request_id = row["request_id"]
+                if request_id not in requests:
+                    continue
+                worker, prompt_tokens = requests[request_id]
+                if row["worker"] != self.worker_caches[worker]:
+                    raise RuntimeError(f"LMCache receipt came from the wrong server for {request_id}")
+                if event == "lmcache_store_completed" and not SAVE_DECODE_CACHE and any(
+                    obj["token_end"] > prompt_tokens for obj in row["objects"]
+                ):
+                    raise RuntimeError(f"LMCache stored generated-token KV for {request_id}")
+                totals[worker][key] += row["bytes"]
+        return totals
 
     def reset(self, worker):
         self.wait(f"{worker} prefix reset", lambda: True if http(

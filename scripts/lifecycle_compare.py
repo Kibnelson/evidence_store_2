@@ -24,6 +24,7 @@ def deployment(summary):
         "lmcache_topology": summary.get("lmcache_topology", "shared"),
         "cold_d": summary.get("cold_d", True),
         "lmcache_l1_budget_gb": summary.get("lmcache_l1_budget_gb", 8),
+        "lmcache_save_decode_cache": summary.get("lmcache_save_decode_cache", False),
     }
 
 
@@ -93,6 +94,8 @@ def compare_deployments(root, against, result):
         "same_cold_d_control": result["deployment"]["cold_d"] == baseline["deployment"]["cold_d"],
         "same_lmcache_l1_budget": result["deployment"]["lmcache_l1_budget_gb"] ==
                                   baseline["deployment"]["lmcache_l1_budget_gb"],
+        "same_decode_offload_policy": result["deployment"]["lmcache_save_decode_cache"] ==
+                                      baseline["deployment"]["lmcache_save_decode_cache"],
         "token_outputs_match": all(not turns for row in arms.values() for turns in row.values()),
     }
 
